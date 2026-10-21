@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=cbfebb51-c0e9-45c9-92ef-94098ff860ce
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Aprender para Comer — WebQuest Interativa</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- html2pdf.js library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Canvas Confetti for Game Victory -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-game {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+        .tab-btn.active {
+            border-bottom-color: #059669;
+            color: #047857;
+            background-color: #ecfdf5;
+            font-weight: 700;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes pulse-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-bounce-gentle {
+            animation: pulse-bounce 2s infinite;
+        }
+        .board-tile {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .board-tile:hover {
+            transform: scale(1.04);
+        }
+        .activity-card {
+            transition: all 0.3s ease;
+        }
+        canvas {
+            touch-action: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-emerald-200 selection:text-emerald-900 overflow-x-hidden">
+
+    <!-- Header Principal -->
+    <header class="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-5 md:py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3.5 text-center md:text-left">
+                <div class="p-3 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20 shrink-0">
+                    <i class="fa-solid fa-utensils text-2xl md:text-3xl text-emerald-200"></i>
+                </div>
+                <div>
+                    <span class="inline-block px-2.5 py-0.5 bg-emerald-900/60 text-emerald-200 text-[10px] md:text-xs font-semibold rounded-full mb-1 tracking-wide uppercase">WebQuest Pedagógica</span>
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">Aprender para Comer</h1>
+                    <p class="text-emerald-100 text-xs md:text-sm font-medium">Nutrição, Escolhas Alimentares Conscientes e Saúde</p>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-auto bg-emerald-950/40 backdrop-blur-md px-3.5 py-2.5 rounded-xl text-xs md:text-sm text-emerald-100 flex items-center justify-center md:justify-start gap-3 border border-emerald-500/30 shadow-inner">
+                <div class="p-2 bg-emerald-600/50 rounded-lg shrink-0">
+                    <i class="fa-solid fa-envelope text-emerald-200 text-sm"></i>
+                </div>
+                <div class="text-left">
+                    <div class="text-[9px] md:text-[10px] uppercase text-emerald-300 font-bold tracking-wider">Envio do Questionário</div>
+                    <span class="font-mono text-white text-xs md:text-sm font-medium select-all break-all">veronicaapprodrigues@gmail.com</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menu de Navegação da WebQuest -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-2 md:px-4 flex overflow-x-auto no-scrollbar space-x-1 md:space-x-2 py-1.5 scroll-smooth">
+            <button onclick="switchTab('questionario')" id="tab-questionario" class="tab-btn active flex items-center space-x-2 px-3.5 md:px-4 py-2.5 border-b-2 border-transparent text-xs md:text-sm font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-all rounded-t-lg border-emerald-300 shrink-0">
+                <i class="fa-solid fa-file-signature text-emerald-600"></i>
+                <span class="font-bold">1. Questionário e Google Forms</span>
+            </button>
+            <button onclick="switchTab('introducao')" id="tab-introducao" class="tab-btn flex items-center space-x-2 px-3.5 md:px-4 py-2.5 border-b-2 border-transparent text-xs md:text-sm font-medium text-slate-600 hover:text-emerald-700 transition-all rounded-t-lg shrink-0">
+                <i class="fa-solid fa-apple-whole"></i>
+                <span>2. Introdução</span>
+            </button>
+            <button onclick="switchTab('tarefa')" id="tab-tarefa" class="tab-btn flex items-center space-x-2 px-3.5 md:px-4 py-2.5 border-b-2 border-transparent text-xs md:text-sm font-medium text-slate-600 hover:text-emerald-700 transition-all rounded-t-lg shrink-0">
+                <i class="fa-solid fa-bullseye"></i>
+                <span>3. Tarefa (10 Atividades)</span>
+            </button>
+            <button onclick="switchTab('processo')" id="tab-processo" class="tab-btn flex items-center space-x-2 px-3.5 md:px-4 py-2.5 border-b-2 border-transparent text-xs md:text-sm font-medium text-slate-600 hover:text-emerald-700 transition-all rounded-t-lg shrink-0">
+                <i class="fa-solid fa-route"></i>
+                <span>4. Recursos</span>
+            </button>
+            <button onclick="switchTab('avaliacao')" id="tab-avaliacao" class="tab-btn flex items-center space-x-2 px-3.5 md:px-4 py-2.5 border-b-2 border-transparent text-xs md:text-sm font-medium text-slate-600 hover:text-emerald-700 transition-all rounded-t-lg shrink-0">
+                <i class="fa-solid fa-clipboard-check text-emerald-600"></i>
+                <span class="font-bold">5. Avaliação Final</span>
+            </button>
+            <button onclick="switchTab('conclusao')" id="tab-conclusao" class="tab-btn flex items-center space-x-2 px-3.5 md:px-4 py-2.5 border-b-2 border-transparent text-xs md:text-sm font-medium text-slate-600 hover:text-emerald-700 transition-all rounded-t-lg shrink-0">
+                <i class="fa-solid fa-gamepad text-amber-500"></i>
+                <span class="font-bold">6. Conclusão e Jogos</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-6xl mx-auto px-3 sm:px-4 py-6 md:py-8 flex-grow w-full">
+
+        <!-- SEÇÃO 1: QUESTIONÁRIO E FORMULÁRIO GOOGLE -->
+        <section id="sec-questionario" class="tab-content bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="bg-gradient-to-r from-indigo-700 via-purple-700 to-emerald-700 text-white p-5 sm:p-6 rounded-2xl shadow-md">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="space-y-2">
+                        <span class="inline-block px-3 py-1 bg-white/20 text-white text-[10px] md:text-xs font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">
+                            <i class="fa-solid fa-square-poll-vertical mr-1"></i> Formulário do Google Integrado
+                        </span>
+                        <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold">Questionário de Avaliação Nutricional</h2>
+                        <p class="text-xs md:text-sm text-purple-100 max-w-2xl leading-relaxed">
+                            Responda diretamente ao formulário do Google abaixo. As respostas serão salvas na planilha da professora e enviadas para <strong>veronicaapprodrigues@gmail.com</strong>.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 shrink-0 w-full md:w-auto">
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLScvzhPh9XqxA8RvkXi8Ha7BFk4MPCq7oUauGxDhNhnq6dMU3Q/viewform" target="_blank" rel="noopener noreferrer" class="w-full md:w-auto bg-white text-indigo-900 hover:bg-purple-50 font-bold px-4 py-2.5 rounded-xl text-xs md:text-sm flex items-center justify-center gap-2 shadow transition-all hover:scale-105">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            <span>Abrir em Nova Aba</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Embed do Google Forms -->
+            <div class="p-3 sm:p-5 bg-slate-50 border border-indigo-200 rounded-2xl shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="fa-brands fa-google text-indigo-600 text-lg"></i>
+                            <span>Formulário de Resposta — Google Forms</span>
+                        </h3>
+                        <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Responda diretamente na tela abaixo ou clique no botão para abrir em tela cheia.</p>
+                    </div>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLScvzhPh9XqxA8RvkXi8Ha7BFk4MPCq7oUauGxDhNhnq6dMU3Q/viewform" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all hover:scale-105 shrink-0">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Abrir Formulário em Tela Cheia</span>
+                    </a>
+                </div>
+                
+                <div class="relative w-full rounded-2xl overflow-hidden border-2 border-indigo-100 shadow-inner bg-white min-h-[500px] sm:min-h-[650px]">
+                    <iframe 
+                        id="google-form-iframe"
+                        src="https://docs.google.com/forms/d/e/1FAIpQLScvzhPh9XqxA8RvkXi8Ha7BFk4MPCq7oUauGxDhNhnq6dMU3Q/viewform?embedded=true" 
+                        class="w-full h-[600px] sm:h-[750px] border-0 relative z-10 bg-white" 
+                        frameborder="0" 
+                        marginheight="0" 
+                        marginwidth="0"
+                        title="Formulário Google - Aprender para Comer">
+                        Carregando formulário do Google...
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Alternativa PDF e Email -->
+            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 pb-6 border-b border-slate-200">
+                <div>
+                    <div class="flex items-center space-x-3 text-emerald-700">
+                        <div class="p-2 bg-emerald-100 rounded-lg shrink-0">
+                            <i class="fa-solid fa-pen-to-square text-lg md:text-xl"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-extrabold text-slate-800">Versão com Gerador de PDF e Envio por E-mail</h3>
+                    </div>
+                    <p class="text-slate-500 text-xs md:text-sm mt-1">Se preferir, preencha os campos abaixo para gerar um relatório em PDF no seu dispositivo.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <button type="button" onclick="gerarPDF()" class="flex-1 md:flex-initial bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs md:text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-105">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>1. Gerar PDF</span>
+                    </button>
+                    <button type="button" onclick="enviarPorEmail()" class="flex-1 md:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs md:text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-105">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>2. Enviar por E-mail</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulário Principal -->
+            <form id="questForm" class="space-y-6" onsubmit="event.preventDefault();">
+                <div class="bg-emerald-50/60 p-4 md:p-6 rounded-2xl border border-emerald-200/80 space-y-4">
+                    <h3 class="text-xs sm:text-sm font-extrabold text-emerald-900 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-id-card text-emerald-600"></i> Identificação do Estudante
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nome Completo *</label>
+                            <input type="text" id="alunoNome" required placeholder="Digite seu nome completo" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Turma / Ano *</label>
+                            <input type="text" id="alunoTurma" required placeholder="Ex: 8º Ano B / Ensino Médio" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Data *</label>
+                            <input type="date" id="alunoData" required class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="p-4 sm:p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white transition-all space-y-2">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            1. Explique com suas palavras a diferença entre um alimento <span class="text-emerald-700">In Natura</span> e um alimento <span class="text-rose-600">Ultraprocessado</span>. Dê um exemplo de cada um. *
+                        </label>
+                        <textarea id="q1" rows="3" required placeholder="Escreva sua resposta aqui com detalhes..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+                    </div>
+
+                    <div class="p-4 sm:p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white transition-all space-y-2">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            2. Ao analisar a lista de ingredientes de um produto industrializado, o que indica que esse produto NÃO faz bem para a saúde se consumido diariamente? *
+                        </label>
+                        <textarea id="q2" rows="3" required placeholder="Explique como identificar um produto não saudável no rótulo..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+                    </div>
+
+                    <div class="p-4 sm:p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white transition-all space-y-2">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            3. Monte um cardápio ideal e equilibrado para um dia (Café da Manhã, Almoço e Jantar) utilizando prioritariamente alimentos "comida de verdade". *
+                        </label>
+                        <textarea id="q3" rows="4" required placeholder="• Café da manhã: ... &#10;• Almoço: ... &#10;• Jantar: ..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+                    </div>
+
+                    <div class="p-4 sm:p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white transition-all space-y-3">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            4. De acordo com o Guia Alimentar, qual deve ser a regra de ouro na nossa alimentação diária? *
+                        </label>
+                        <div class="space-y-2">
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition-all">
+                                <input type="radio" name="q4" value="Prefira sempre alimentos ultraprocessados pela praticidade." class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-xs md:text-sm text-slate-700">A) Prefira sempre alimentos ultraprocessados pela praticidade.</span>
+                            </label>
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition-all">
+                                <input type="radio" name="q4" value="Faça de alimentos in natura ou minimamente processados a base da sua alimentação." class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0" checked>
+                                <span class="text-xs md:text-sm text-slate-700 font-medium">B) Faça de alimentos in natura ou minimamente processados a base da sua alimentação.</span>
+                            </label>
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition-all">
+                                <input type="radio" name="q4" value="Elimine totalmente qualquer tipo de carboidrato das refeições." class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-xs md:text-sm text-slate-700">C) Elimine totalmente qualquer tipo de carboidrato das refeições.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-4 sm:p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white transition-all space-y-2">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            5. Refletindo sobre os seus próprios hábitos: Qual mudança simples você pretende adotar na sua rotina alimentar a partir desta pesquisa?
+                        </label>
+                        <textarea id="q5" rows="2" placeholder="Exemplo: Substituir o refrigerante por suco natural ou água, comer mais frutas no lanche..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-200 space-y-4">
+                    <div class="bg-emerald-50 p-3.5 sm:p-4 rounded-xl border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-emerald-900">
+                        <div class="flex items-center gap-2 text-center sm:text-left">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-lg shrink-0"></i>
+                            <span>Endereço de destino pré-configurado: <strong class="font-mono text-emerald-800 select-all">veronicaapprodrigues@gmail.com</strong></span>
+                        </div>
+                        <button type="button" onclick="copiarResumo()" class="w-full sm:w-auto text-xs bg-white text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-300 hover:bg-emerald-100 transition-all font-medium flex items-center justify-center gap-1 shrink-0">
+                            <i class="fa-solid fa-copy"></i> Copiar Respostas
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 justify-end">
+                        <button type="button" onclick="gerarPDF()" class="w-full sm:w-auto px-5 py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs md:text-sm rounded-xl flex items-center justify-center space-x-2 shadow-md transition-all hover:scale-[1.02]">
+                            <i class="fa-solid fa-file-pdf text-base md:text-lg"></i>
+                            <span>1. Baixar Relatório em PDF</span>
+                        </button>
+                        
+                        <button type="button" onclick="enviarPorEmail()" class="w-full sm:w-auto px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm rounded-xl flex items-center justify-center space-x-2 shadow-md transition-all hover:scale-[1.02]">
+                            <i class="fa-solid fa-paper-plane text-base md:text-lg"></i>
+                            <span>2. Enviar para Professora por E-mail</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- SEÇÃO 2: INTRODUÇÃO COM VÍDEOS RESPONSIVOS -->
+        <section id="sec-introducao" class="tab-content hidden bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center space-x-3 text-emerald-700 border-b border-slate-100 pb-4">
+                <div class="p-2.5 bg-emerald-100 rounded-xl text-emerald-700 shrink-0">
+                    <i class="fa-solid fa-apple-whole text-xl md:text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-800">2. Introdução</h2>
+                    <p class="text-xs md:text-sm text-slate-500">Compreendendo a Alimentação e a Nutrição Saudável</p>
+                </div>
+            </div>
+
+            <div class="prose max-w-none text-slate-700 space-y-3 text-xs sm:text-sm md:text-base leading-relaxed">
+                <p>
+                    A alimentação é uma das necessidades mais fundamentais do ser humano, mas você já parou para pensar sobre o impacto que suas escolhas diárias têm na sua saúde, disposição e futuro?
+                </p>
+                <p>
+                    Com o avanço da indústria de alimentos, somos constantemente bombardeados por produtos ultraprocessados, cheios de corantes, açúcares e conservantes. Nesta WebQuest, você se tornará um <strong>investigador nutricional</strong> para aprender a escolher comida de verdade!
+                </p>
+            </div>
+
+            <div class="mt-6 space-y-5">
+                <div class="flex items-center gap-2 border-l-4 border-emerald-600 pl-3 py-1">
+                    <i class="fa-solid fa-circle-play text-emerald-600 text-base md:text-lg"></i>
+                    <h3 class="font-extrabold text-slate-800 text-base md:text-lg">Vídeos Explicativos das Categorias Alimentares</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+                    
+                    <!-- CARD 1: IN NATURA -->
+                    <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                        <div class="p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] md:text-[11px] font-bold rounded-lg uppercase tracking-wider">
+                                    <i class="fa-solid fa-leaf mr-1"></i> 1. In Natura
+                                </span>
+                                <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-200/60 px-2 py-0.5 rounded-full">
+                                    Guia Alimentar
+                                </span>
+                            </div>
+
+                            <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm leading-snug">
+                                Alimentos In Natura e Minimamente Processados
+                            </h4>
+                            
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Alimentos obtidos diretamente de plantas ou animais sem sofrerem alterações químicas (frutas, legumes, verduras, grãos e ovos).
+                            </p>
+
+                            <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 border border-emerald-300 shadow-inner mt-2">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/MjViJUczbM8" 
+                                    title="Alimentos In Natura e Minimamente Processados" 
+                                    class="w-full h-full border-0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    referrerpolicy="strict-origin-when-cross-origin" 
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 2: PROCESSADOS -->
+                    <div class="bg-amber-50/70 border border-amber-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                        <div class="p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2.5 py-1 bg-amber-700 text-white text-[10px] md:text-[11px] font-bold rounded-lg uppercase tracking-wider">
+                                    <i class="fa-solid fa-cheese mr-1"></i> 2. Processados
+                                </span>
+                                <span class="text-[10px] font-semibold text-amber-900 bg-amber-200/60 px-2 py-0.5 rounded-full">
+                                    Nutrição Prática
+                                </span>
+                            </div>
+
+                            <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm leading-snug">
+                                Diferenças dos Alimentos Processados
+                            </h4>
+                            
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Fabricados pela indústria com adição de sal, açúcar ou óleo a um alimento in natura para maior durabilidade (queijos, conservas, pães).
+                            </p>
+
+                            <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 border border-amber-300 shadow-inner mt-2">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/-Fmo6Px5gIY" 
+                                    title="Diferenças dos Alimentos Processados" 
+                                    class="w-full h-full border-0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    referrerpolicy="strict-origin-when-cross-origin" 
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: ULTRAPROCESSADOS -->
+                    <div class="bg-rose-50/70 border border-rose-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                        <div class="p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2.5 py-1 bg-rose-700 text-white text-[10px] md:text-[11px] font-bold rounded-lg uppercase tracking-wider">
+                                    <i class="fa-solid fa-cookie-bite mr-1"></i> 3. Ultraprocessados
+                                </span>
+                                <span class="text-[10px] font-semibold text-rose-900 bg-rose-200/60 px-2 py-0.5 rounded-full">
+                                    Dr. Drauzio Varella
+                                </span>
+                            </div>
+
+                            <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm leading-snug">
+                                O que é um Alimento Ultraprocessado?
+                            </h4>
+                            
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Formulações industriais com aditivos, corantes e aromatizantes artificiais (refrigerantes, salgadinhos de pacote, biscoitos recheados).
+                            </p>
+
+                            <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 border border-rose-300 shadow-inner mt-2">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/5gyTL7vqwMA" 
+                                    title="O que é um alimento ultraprocessado?" 
+                                    class="w-full h-full border-0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    referrerpolicy="strict-origin-when-cross-origin" 
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3: TAREFA (10 ATIVIDADES PRÁTICAS) -->
+        <section id="sec-tarefa" class="tab-content hidden bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center space-x-3 text-emerald-700 border-b border-slate-100 pb-4">
+                <div class="p-2.5 bg-emerald-100 rounded-xl text-emerald-700 shrink-0">
+                    <i class="fa-solid fa-bullseye text-xl md:text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-800">3. Tarefa — 10 Atividades de Investigação Prática</h2>
+                    <p class="text-xs md:text-sm text-slate-500">Responda a cada atividade e clique em <strong>Verificar Resposta</strong> para avançar!</p>
+                </div>
+            </div>
+
+            <!-- Box Informativo sobre os Recursos da Etapa 4 -->
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-start gap-3.5 text-emerald-900 shadow-sm">
+                <div class="p-2.5 bg-emerald-200/80 rounded-xl text-emerald-800 shrink-0 mt-0.5">
+                    <i class="fa-solid fa-lightbulb text-lg md:text-xl"></i>
+                </div>
+                <div class="text-xs md:text-sm space-y-1.5 flex-grow">
+                    <h3 class="font-bold text-emerald-950 text-xs sm:text-sm">💡 Precisa de apoio para realizar estas atividades?</h3>
+                    <p class="text-slate-700 leading-relaxed">
+                        Na <strong>Etapa 4 (Recursos)</strong> você encontrará links diretos de pesquisa sobre a leitura de rótulos, a regra de ouro dos ingredientes e os materiais oficiais do Ministério da Saúde e ANVISA que ajudarão você a responder estas atividades com sucesso!
+                    </p>
+                    <button type="button" onclick="switchTab('processo')" class="inline-flex items-center gap-2 mt-1 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition-all shadow-sm hover:scale-105">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Ir para Etapa 4 (Recursos)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                
+                <!-- ATIVIDADE 1 -->
+                <div id="card-atv-1" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-layer-group"></i> Atividade 1
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Classificação Alimentar</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        1. Classificando o Nível de Processamento dos Alimentos
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Analise os 3 trios alimentares abaixo e identifique a qual grupo cada um pertence (<em>In Natura</em>, <em>Processado</em> ou <em>Ultraprocessado</em>):
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                        <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                            <div class="font-bold text-xs text-slate-800">Grupo A: Maçã, Ovos e Feijão cru</div>
+                            <select id="atv1_a" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="">Selecione a classificação...</option>
+                                <option value="In Natura">In Natura / Minimamente Processado</option>
+                                <option value="Processado">Processado</option>
+                                <option value="Ultraprocessado">Ultraprocessado</option>
+                            </select>
+                        </div>
+
+                        <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                            <div class="font-bold text-xs text-slate-800">Grupo B: Queijo Minas e Milho em lata</div>
+                            <select id="atv1_b" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="">Selecione a classificação...</option>
+                                <option value="In Natura">In Natura / Minimamente Processado</option>
+                                <option value="Processado">Processado</option>
+                                <option value="Ultraprocessado">Ultraprocessado</option>
+                            </select>
+                        </div>
+
+                        <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                            <div class="font-bold text-xs text-slate-800">Grupo C: Refrigerante e Biscoito Recheado</div>
+                            <select id="atv1_c" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="">Selecione a classificação...</option>
+                                <option value="In Natura">In Natura / Minimamente Processado</option>
+                                <option value="Processado">Processado</option>
+                                <option value="Ultraprocessado">Ultraprocessado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-1" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade1()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 2 -->
+                <div id="card-atv-2" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> Atividade 2
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Detetive do Rótulo</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        2. Investigação Online: O Detetive do Rótulo
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Pesquise na <strong>internet</strong> o rótulo de qualquer alimento industrializado (exemplo: salgadinho de pacote, cereal matinal, achocolatado). Indique o nome do produto, qual é o <strong>1º ingrediente da lista</strong> e quais <strong>aditivos químicos</strong> (corantes, conservantes, aromatizantes) você encontrou:
+                    </p>
+
+                    <div class="space-y-3">
+                        <input type="text" id="atv2_produto" placeholder="Nome do produto pesquisado na internet..." class="w-full p-3 bg-white border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <textarea id="atv2_ingredientes" rows="3" placeholder="• 1º Ingrediente da lista: ... &#10;• Aditivos químicos encontrados: ..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-2" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade2()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 3 -->
+                <div id="card-atv-3" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-utensils"></i> Atividade 3
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Menu Saudável</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        3. Elaborando um Cardápio Diário Equilibrado
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Proponha um cardápio completo para um dia inteiro priorizando comida de verdade e alimentos <em>in natura</em>:
+                    </p>
+
+                    <textarea id="atv3_cardapio" rows="4" placeholder="• Café da manhã: ... &#10;• Almoço: ... &#10;• Lanche da tarde: ... &#10;• Jantar: ..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-3" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade3()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 4 -->
+                <div id="card-atv-4" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb"></i> Atividade 4
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Quiz: Açúcares Disfarçados</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        4. Caçador de Nomes Ocultos do Açúcar
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        A indústria costuma usar nomes diferentes para esconder o açúcar nos rótulos. Qual das combinações abaixo representa <strong>exclusivamente formas disfarçadas de açúcar</strong>?
+                    </p>
+
+                    <div class="space-y-2 text-xs md:text-sm">
+                        <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="radio" name="quiz_task4" value="A" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                            <span class="text-slate-700">A) Maltodextrina, Xarope de Milho e Glucose de Milho</span>
+                        </label>
+                        <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="radio" name="quiz_task4" value="B" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                            <span class="text-slate-700">B) Lecitina de Soja, Bicarbonato e Sal Marinho</span>
+                        </label>
+                        <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="radio" name="quiz_task4" value="C" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                            <span class="text-slate-700">C) Proteína Isolada do Leite e Ácido Cítrico</span>
+                        </label>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-4" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade4()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 5 -->
+                <div id="card-atv-5" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-traffic-light"></i> Atividade 5
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Semáforo da Nutrição</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        5. Semáforo dos Hábitos Alimentares
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Separe os alimentos abaixo nas cores do semáforo da saúde: <strong>🟢 Verde</strong> (Consumo diário livre), <strong>🟡 Amarelo</strong> (Consumo moderado) e <strong>🔴 Vermelho</strong> (Evitar ou consumo raro):
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+                            <div class="font-bold text-xs text-emerald-900 flex items-center gap-1">
+                                🟢 Verde (Base Diária)
+                            </div>
+                            <input type="text" id="sem_verde" placeholder="Ex: Frutas, verduras, arroz, feijão..." class="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs focus:outline-none">
+                        </div>
+
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                            <div class="font-bold text-xs text-amber-900 flex items-center gap-1">
+                                🟡 Amarelo (Com Moderação)
+                            </div>
+                            <input type="text" id="sem_amarelo" placeholder="Ex: Pães brancos, queijo, geleia..." class="w-full p-2 bg-white border border-amber-300 rounded-lg text-xs focus:outline-none">
+                        </div>
+
+                        <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+                            <div class="font-bold text-xs text-rose-900 flex items-center gap-1">
+                                🔴 Vermelho (Evitar / Raro)
+                            </div>
+                            <input type="text" id="sem_vermelho" placeholder="Ex: Salgadinhos, refrigerantes, miojo..." class="w-full p-2 bg-white border border-rose-300 rounded-lg text-xs focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-5" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade5()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 6 -->
+                <div id="card-atv-6" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-glass-water"></i> Atividade 6
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Calculadora de Água</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        6. Calculadora Interativa de Hidratação Diária
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        A água é essencial para o metabolismo. Digite seu peso abaixo para calcular a recomendação diária ideal (35 ml por kg de peso corporal):
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                        <div class="w-full sm:w-1/2">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Seu Peso Aproximado (kg):</label>
+                            <input type="number" id="input-peso-agua" placeholder="Ex: 50" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                        <button type="button" onclick="calcularAgua()" class="w-full sm:w-auto px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm mt-auto">
+                            <i class="fa-solid fa-calculator mr-1"></i> Calcular Meta de Água
+                        </button>
+                    </div>
+
+                    <div id="resultado-agua" class="hidden p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-xs text-cyan-900 font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-droplet text-cyan-600 text-base shrink-0"></i>
+                        <span>Sua meta recomendada é de: <strong id="valor-agua-ml" class="text-cyan-950 font-extrabold text-xs sm:text-sm">0 ml</strong> por dia!</span>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-6" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade6()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 7 -->
+                <div id="card-atv-7" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-scale-balanced"></i> Atividade 7
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Comparador de Lanches</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        7. Comparador de Lanche Escolar: Natural x Ultraprocessado
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Compare as duas opções de lanche escolar abaixo e escreva uma breve justificativa de qual trará mais energia e nutrição de longa duração para o seu estudo:
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-1">
+                            <span class="font-bold text-rose-800">Opção A (Ultraprocessado):</span>
+                            <p class="text-slate-600">Refrigerante de caixinha + Salgadinho de milho + Biscoito recheado.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
+                            <span class="font-bold text-emerald-800">Opção B (Comida de Verdade):</span>
+                            <p class="text-slate-600">Suco natural de laranja + Sanduíche de pão integral com queijo + 1 Banana.</p>
+                        </div>
+                    </div>
+
+                    <textarea id="atv7_justificativa" rows="2" placeholder="Escreva sua análise comparativa aqui..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-7" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade7()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 8 -->
+                <div id="card-atv-8" class="activity-card p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 hover:bg-white transition-all shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <span class="px-2.5 py-1 bg-emerald-800 text-white text-[10px] sm:text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-handshake-simple"></i> Atividade 8
+                        </span>
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">Plano de Ação e Compromisso</span>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-xs sm:text-sm md:text-base">
+                        8. Meu Compromisso Pessoal de Saúde em Família
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Escolha pelo menos 1 meta de mudança prática para adotar nas compras ou refeições da sua família nesta semana e descreva seu plano de ação:
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-start space-x-2.5 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="checkbox" id="chk-meta-1" class="text-emerald-600 rounded focus:ring-emerald-500 h-4 w-4 mt-0.5 shrink-0">
+                            <span class="text-slate-700">Substituir refrigerante por água ou suco natural na semana.</span>
+                        </label>
+                        <label class="flex items-start space-x-2.5 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="checkbox" id="chk-meta-2" class="text-emerald-600 rounded focus:ring-emerald-500 h-4 w-4 mt-0.5 shrink-0">
+                            <span class="text-slate-700">Ler a lista de ingredientes no supermercado antes de comprar.</span>
+                        </label>
+                        <label class="flex items-start space-x-2.5 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="checkbox" id="chk-meta-3" class="text-emerald-600 rounded focus:ring-emerald-500 h-4 w-4 mt-0.5 shrink-0">
+                            <span class="text-slate-700">Comer ao menos duas porções de frutas frescas por dia.</span>
+                        </label>
+                        <label class="flex items-start space-x-2.5 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                            <input type="checkbox" id="chk-meta-4" class="text-emerald-600 rounded focus:ring-emerald-500 h-4 w-4 mt-0.5 shrink-0">
+                            <span class="text-slate-700">Evitar comprar biscoitos recheados e salgadinhos de pacote.</span>
+                        </label>
+                    </div>
+
+                    <textarea id="tarefa_q8" rows="3" placeholder="Descreva como você vai convidar sua família para participar dessa mudança de hábito saudável..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200/80">
+                        <div id="fb-atv-8" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade8()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 9 (JOGO 1 - DIFICULDADE INTERMEDIÁRIA) -->
+                <div id="card-atv-9" class="activity-card p-4 sm:p-5 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white rounded-2xl space-y-4 shadow-xl border-2 border-indigo-400/50">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-500/40 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs rounded-lg uppercase tracking-wider flex items-center gap-1">
+                                🎮 Atividade 9
+                            </span>
+                            <span class="text-[10px] sm:text-xs font-bold text-indigo-200 bg-indigo-950/80 px-2.5 py-1 rounded-full border border-indigo-400/30">
+                                ⚡ Dificuldade Intermediária
+                            </span>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-semibold text-amber-300">Jogo 1: Caçador de Aditivos Ocultos</span>
+                    </div>
+
+                    <div>
+                        <h3 class="font-extrabold font-game text-base sm:text-lg text-amber-300 flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i> Detetive de Aditivos e Açúcares Mascarados
+                        </h3>
+                        <p class="text-xs text-indigo-100 mt-1 leading-relaxed">
+                            Selecione um produto industrializado abaixo. Analise a lista de ingredientes e <strong>CLIQUE em todos os ingredientes que forem AÇÚCARES MASCARADOS ou ADITIVOS QUÍMICOS/GORDURA HIDROGENADA</strong> para desmascarar o produto!
+                        </p>
+                    </div>
+
+                    <!-- Seletor de Produto do Jogo 9 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button type="button" onclick="iniciarJogo9(0)" id="btn-prod-0" class="p-2.5 bg-indigo-800/80 hover:bg-indigo-700 border border-indigo-400/40 rounded-xl text-xs font-bold text-left flex items-center gap-2 transition-all">
+                            <span class="text-lg shrink-0">🥣</span>
+                            <div>
+                                <div class="text-white">Cereal "Fitness Gold"</div>
+                                <div class="text-[10px] text-indigo-300 font-normal">Falsa imagem de saudável</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="iniciarJogo9(1)" id="btn-prod-1" class="p-2.5 bg-indigo-950/80 hover:bg-indigo-700 border border-indigo-400/40 rounded-xl text-xs font-bold text-left flex items-center gap-2 transition-all">
+                            <span class="text-lg shrink-0">🧃</span>
+                            <div>
+                                <div class="text-white">Néctar de Fruta Caixinha</div>
+                                <div class="text-[10px] text-indigo-300 font-normal">Sabor Uva Concentrado</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="iniciarJogo9(2)" id="btn-prod-2" class="p-2.5 bg-indigo-950/80 hover:bg-indigo-700 border border-indigo-400/40 rounded-xl text-xs font-bold text-left flex items-center gap-2 transition-all">
+                            <span class="text-lg shrink-0">🍪</span>
+                            <div>
+                                <div class="text-white">Biscoito Waffle Choco</div>
+                                <div class="text-[10px] text-indigo-300 font-normal">Ultraprocessado Clássico</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Quadro do Rótulo Interativo -->
+                    <div class="bg-slate-950/90 p-3.5 sm:p-4 rounded-xl border border-indigo-400/30 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs border-b border-slate-800 pb-2 gap-1">
+                            <span class="font-bold text-amber-300 uppercase tracking-wide" id="j9-nome-produto">Produto: Cereal "Fitness Gold"</span>
+                            <span class="text-[11px] text-indigo-200">Encontrados: <strong id="j9-contador" class="text-amber-400 font-bold text-sm">0</strong> de <span id="j9-total">0</span> armadilhas</span>
+                        </div>
+
+                        <p class="text-[11px] text-slate-300">Instruções: Clique sobre as palavras da lista abaixo para marcar os aditivos nocivos:</p>
+
+                        <!-- Palavras clicáveis da lista de ingredientes -->
+                        <div id="j9-ingredientes-box" class="flex flex-wrap gap-1.5 p-3 bg-slate-900 rounded-lg border border-slate-800 text-xs">
+                            <!-- Inserido dinamicamente via JS -->
+                        </div>
+
+                        <!-- Painel de Validação e Resultado -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                            <div id="j9-feedback" class="text-xs font-semibold text-indigo-200 leading-snug">
+                                Clique nos ingredientes não saudáveis para começar o teste!
+                            </div>
+                            <button type="button" onclick="verificarJogo9()" class="w-full sm:w-auto px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl transition-all shrink-0 shadow-md">
+                                <i class="fa-solid fa-shield-halved mr-1"></i> Verificar Resposta
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Campo de Registro do Aprendizado da Atividade 9 -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-indigo-200">
+                            Sua Análise da Atividade 9: Quais armadilhas você encontrou nos rótulos e por que esse produto pode enganar o consumidor?
+                        </label>
+                        <textarea id="tarefa_q9" rows="3" placeholder="Escreva o resultado da sua investigação do rótulo aqui..." class="w-full p-3.5 border border-indigo-300/40 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none bg-slate-900 text-white transition-all"></textarea>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-indigo-500/40">
+                        <div id="fb-atv-9" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div id="actions-atv-9" class="hidden flex items-center gap-2 w-full sm:w-auto justify-end"></div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADE 10 (JOGO 2 - DIFICULDADE INTERMEDIÁRIA) -->
+                <div id="card-atv-10" class="activity-card p-4 sm:p-5 bg-gradient-to-br from-teal-900 via-emerald-950 to-slate-900 text-white rounded-2xl space-y-4 shadow-xl border-2 border-emerald-400/50">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/40 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 bg-emerald-400 text-slate-950 font-black text-[10px] sm:text-xs rounded-lg uppercase tracking-wider flex items-center gap-1">
+                                🎮 Atividade 10
+                            </span>
+                            <span class="text-[10px] sm:text-xs font-bold text-emerald-200 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-400/30">
+                                ⚡ Dificuldade Intermediária
+                            </span>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-semibold text-emerald-300">Jogo 2: Laboratório do Prato Equilibrado</span>
+                    </div>
+
+                    <div>
+                        <h3 class="font-extrabold font-game text-base sm:text-lg text-emerald-300 flex items-center gap-2">
+                            <i class="fa-solid fa-plate-wheat"></i> Monte a Refeição Ideal com Sinergia Nutricional
+                        </h3>
+                        <p class="text-xs text-emerald-100 mt-1 leading-relaxed">
+                            Monte seu prato escolhendo 1 opção de cada grupo. O objetivo é alcançar o índice de <strong>100% Nutritivo</strong> mantendo baixo o nível de alimentos ultraprocessados e ativando a <strong>Sinergia Nutricional</strong>!
+                        </p>
+                    </div>
+
+                    <!-- Grade de Seleção dos Alimentos -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        
+                        <!-- GRUPO 1: Hortaliças / Salada (50% do prato) -->
+                        <div class="p-3 bg-slate-900/80 rounded-xl border border-emerald-500/30 space-y-2">
+                            <div class="font-bold text-emerald-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                                <span>🥗 Hortaliças (50% do prato)</span>
+                            </div>
+                            <div class="space-y-1.5">
+                                <button type="button" onclick="selecionarItemJogo10('hortalica', 0)" id="j10-h-0" class="j10-opt-h w-full text-left p-2 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400 rounded-lg text-[11px] font-medium transition-all">
+                                    🟢 Alface, Tomate e Cenoura (In Natura)
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('hortalica', 1)" id="j10-h-1" class="j10-opt-h w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🟡 Conserva de Milho/Ervilha (Processado)
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('hortalica', 2)" id="j10-h-2" class="j10-opt-h w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🔴 Sem salada / Apenas molho pronto
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GRUPO 2: Carboidratos (25% do prato) -->
+                        <div class="p-3 bg-slate-900/80 rounded-xl border border-emerald-500/30 space-y-2">
+                            <div class="font-bold text-emerald-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                                <span>🍚 Carboidrato (25%)</span>
+                            </div>
+                            <div class="space-y-1.5">
+                                <button type="button" onclick="selecionarItemJogo10('carb', 0)" id="j10-c-0" class="j10-opt-c w-full text-left p-2 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400 rounded-lg text-[11px] font-medium transition-all">
+                                    🟢 Arroz Integral ou Mandioca (In Natura)
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('carb', 1)" id="j10-c-1" class="j10-opt-c w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🟡 Arroz Branco Tradicional
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('carb', 2)" id="j10-c-2" class="j10-opt-c w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🔴 Macarrão Instantâneo com tempero
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GRUPO 3: Leguminosas (12.5% do prato) -->
+                        <div class="p-3 bg-slate-900/80 rounded-xl border border-emerald-500/30 space-y-2">
+                            <div class="font-bold text-emerald-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                                <span>🫘 Leguminosas (12.5%)</span>
+                            </div>
+                            <div class="space-y-1.5">
+                                <button type="button" onclick="selecionarItemJogo10('legum', 0)" id="j10-l-0" class="j10-opt-l w-full text-left p-2 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400 rounded-lg text-[11px] font-medium transition-all">
+                                    🟢 Feijão Preto / Carioca caseiro
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('legum', 1)" id="j10-l-1" class="j10-opt-l w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🟢 Grão-de-bico temperado com ervas
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('legum', 2)" id="j10-l-2" class="j10-opt-l w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🔴 Feijão em lata com bacon
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GRUPO 4: Proteínas (12.5% do prato) -->
+                        <div class="p-3 bg-slate-900/80 rounded-xl border border-emerald-500/30 space-y-2">
+                            <div class="font-bold text-emerald-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                                <span>🍗 Proteínas (12.5%)</span>
+                            </div>
+                            <div class="space-y-1.5">
+                                <button type="button" onclick="selecionarItemJogo10('prot', 0)" id="j10-p-0" class="j10-opt-p w-full text-left p-2 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400 rounded-lg text-[11px] font-medium transition-all">
+                                    🟢 Ovos Caipiras / Frango / Peixe
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('prot', 1)" id="j10-p-1" class="j10-opt-p w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🟡 Ovo frito em excesso de óleo
+                                </button>
+                                <button type="button" onclick="selecionarItemJogo10('prot', 2)" id="j10-p-2" class="j10-opt-p w-full text-left p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-medium transition-all">
+                                    🔴 Salsicha / Nugget Ultraprocessado
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Painel de Placar do Prato -->
+                    <div class="p-3.5 sm:p-4 bg-slate-950/90 rounded-xl border border-emerald-400/40 space-y-2">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                            <div>
+                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Análise de Qualidade do Prato</span>
+                                <div id="j10-status" class="text-xs font-extrabold text-emerald-400 mt-0.5">🏆 Prato Nutritivo Exemplar</div>
+                            </div>
+                            <div class="text-left sm:text-right">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Índice Nutritivo</span>
+                                <div id="j10-score" class="text-lg sm:text-xl font-black font-game text-amber-300">100 / 100</div>
+                            </div>
+                        </div>
+                        
+                        <div id="j10-sinergia" class="text-xs font-bold text-amber-300 flex items-center gap-1">
+                            ✨ Absorção de Ferro + Fibras Ativas!
+                        </div>
+                        <p id="j10-explicacao" class="text-xs text-slate-300 leading-relaxed">
+                            Parabéns! Você montou um prato baseado em comida de verdade. A metade composta por vegetais garante micronutrientes e a combinação de feijão com proteínas limpas garante energia sustentável.
+                        </p>
+                    </div>
+
+                    <!-- Campo de Análise de Conclusão da Atividade 10 -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-emerald-200">
+                            Sua Análise da Atividade 10: Qual a importância de manter 50% do prato com salada fresca e por que alimentos ultraprocessados reduzem a nota nutricional?
+                        </label>
+                        <textarea id="tarefa_q10" rows="3" placeholder="Escreva sua explicação com base nas suas escolhas no simulador..." class="w-full p-3.5 border border-emerald-300/40 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none bg-slate-900 text-white transition-all"></textarea>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-emerald-500/40">
+                        <div id="fb-atv-10" class="hidden text-xs font-semibold p-2.5 rounded-xl w-full sm:w-auto"></div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="verificarAtividade10()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-md">
+                                <i class="fa-solid fa-check-double mr-1"></i> Verificar e Concluir Tarefas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4: RECURSOS -->
+        <section id="sec-processo" class="tab-content hidden bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center space-x-3 text-emerald-700 border-b border-slate-100 pb-4">
+                <div class="p-2.5 bg-emerald-100 rounded-xl text-emerald-700 shrink-0">
+                    <i class="fa-solid fa-route text-xl md:text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-800">4. Recursos</h2>
+                    <p class="text-xs md:text-sm text-slate-500">Fontes Oficiais do Governo Federal, Ministério da Saúde e ANVISA</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                <!-- Passo 1: Guia Alimentar -->
+                <div class="p-4 sm:p-5 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-3 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2 text-emerald-800 font-bold text-xs sm:text-sm">
+                            <span class="w-6 h-6 bg-emerald-700 text-white rounded-full flex items-center justify-center text-xs shrink-0">1</span>
+                            <h3>Guia Alimentar Oficial do Ministério da Saúde</h3>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Acesse as diretrizes oficiais do Brasil sobre alimentação saudável e entenda as quatro categorias de processamento.
+                        </p>
+                    </div>
+                    <a href="https://www.gov.br/saude/pt-br/composicao/saps/promocao-da-saude/guias-alimentares" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition-all shadow-sm">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Acessar Guia Alimentar (MS)</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                </div>
+
+                <!-- Passo 2: ANVISA -->
+                <div class="p-4 sm:p-5 bg-teal-50/80 border border-teal-200 rounded-2xl space-y-3 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2 text-teal-800 font-bold text-xs sm:text-sm">
+                            <span class="w-6 h-6 bg-teal-700 text-white rounded-full flex items-center justify-center text-xs shrink-0">2</span>
+                            <h3>Rotulagem Nutricional e Regra de Ouro (ANVISA)</h3>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Saiba como identificar ingredientes ocultos nos rótulos e entenda a regra oficial de que os componentes são dispostos em <a href="https://www.gov.br/anvisa/pt-br/assuntos/noticias-anvisa/2020/perguntas-e-respostas-rotulagem-nutricional" target="_blank" rel="noopener noreferrer" class="text-emerald-700 font-bold underline hover:text-emerald-900">ordem decrescente de quantidade</a>.
+                        </p>
+                    </div>
+                    <a href="https://www.gov.br/anvisa/pt-br/assuntos/alimentos/rotulagem/rotulagem-nutricional" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold text-xs transition-all shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Acessar Portal da ANVISA</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 5: AVALIAÇÃO FINAL INTERATIVA -->
+        <section id="sec-avaliacao" class="tab-content hidden bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6 md:space-y-8">
+            <div class="flex items-center space-x-3 text-emerald-700 border-b border-slate-100 pb-4">
+                <div class="p-2.5 bg-emerald-100 rounded-xl text-emerald-700 shrink-0">
+                    <i class="fa-solid fa-clipboard-check text-xl md:text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-800">5. Avaliação Final de Aprendizagem</h2>
+                    <p class="text-xs md:text-sm text-slate-500">Teste de Conhecimentos Nutricionais e Análise de Casos Práticos</p>
+                </div>
+            </div>
+
+            <!-- Banner do Aluno -->
+            <div class="bg-gradient-to-r from-emerald-800 via-teal-800 to-indigo-900 text-white p-5 sm:p-6 rounded-2xl shadow-md space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-amber-400 text-slate-950 text-[10px] md:text-xs font-black rounded-lg uppercase tracking-wider">
+                        <i class="fa-solid fa-pen-nib mr-1"></i> Etapa Final
+                    </span>
+                    <span class="text-xs text-emerald-200 font-medium">Pontuação Máxima: 10,0 pontos</span>
+                </div>
+                <h3 class="text-lg sm:text-xl md:text-2xl font-extrabold">Demonstre o que Você Aprendeu!</h3>
+                <p class="text-xs md:text-sm text-emerald-100 leading-relaxed">
+                    Responda às questões abaixo para testar sua capacidade de classificar alimentos, identificar armadilhas nos rótulos e propor soluções saudáveis. Ao terminar, clique em <strong>"Finalizar e Calcular Nota"</strong> para ver seu desempenho!
+                </p>
+            </div>
+
+            <!-- Formulário da Prova Final -->
+            <form id="form-avaliacao-final" class="space-y-6" onsubmit="event.preventDefault();">
+                
+                <!-- PARTE 1: QUESTÕES OBJETIVAS -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-sm sm:text-base border-b border-slate-200 pb-2">
+                        <span class="w-7 h-7 bg-emerald-700 text-white rounded-lg flex items-center justify-center text-xs shrink-0">P1</span>
+                        <h3>Parte 1 — Teste de Conhecimento Conceitual (Objetivas)</h3>
+                    </div>
+
+                    <!-- Questão Prova 1 -->
+                    <div class="p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            1. Uma pessoa almoçou: Arroz branco, Feijão preto caseiro, Frango grelhado, Salada de alface/tomate e tomou um Refrigerante de caixinha. De acordo com a classificação NOVA, qual alimento dessa refeição é um ULTRAPROCESSADO?
+                        </label>
+                        <div class="space-y-2 text-xs md:text-sm">
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                                <input type="radio" name="p_q1" value="A" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-slate-700">A) O frango grelhado, por ter sido cozido no fogo.</span>
+                            </label>
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                                <input type="radio" name="p_q1" value="B" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-slate-700">B) O refrigerante de caixinha, por conter corantes, aromatizantes e açúcares adicionados.</span>
+                            </label>
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                                <input type="radio" name="p_q1" value="C" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-slate-700">C) O feijão preto, por ser temperado com sal e alho.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Questão Prova 2 -->
+                    <div class="p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:bg-white transition-all">
+                        <label class="block font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-snug">
+                            2. Ao ler o rótulo de um pão "integral" no mercado, você percebeu que o 1º ingrediente da lista é <span class="underline decoration-emerald-500">"Farinha de trigo enriquecida com ferro e ácido fólico"</span> e o 2º é <span class="underline decoration-emerald-500">"Açúcar refinado"</span>. Pela Regra de Ouro da ANVISA, o que isso significa?
+                        </label>
+                        <div class="space-y-2 text-xs md:text-sm">
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                                <input type="radio" name="p_q2" value="A" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-slate-700">A) Que o produto é 100% natural e pode ser consumido sem limitações.</span>
+                            </label>
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                                <input type="radio" name="p_q2" value="B" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-slate-700">B) Que a farinha refinada é o componente em MAIOR quantidade e que há grande quantidade de açúcar adicionado.</span>
+                            </label>
+                            <label class="flex items-start sm:items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400">
+                                <input type="radio" name="p_q2" value="C" class="text-emerald-600 focus:ring-emerald-500 h-4 w-4 mt-0.5 sm:mt-0 shrink-0">
+                                <span class="text-slate-700">C) Que o açúcar é o ingrediente em menor quantidade no pacote.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARTE 2: ANÁLISE DE MITOS E VERDADES -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-sm sm:text-base border-b border-slate-200 pb-2">
+                        <span class="w-7 h-7 bg-emerald-700 text-white rounded-lg flex items-center justify-center text-xs shrink-0">P2</span>
+                        <h3>Parte 2 — Julgamento de Afirmações Nutricionais (Verdadeiro ou Falso)</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                            <p class="font-bold text-slate-800">A) Suco de caixinha é tão saudável quanto comer a fruta fresca in natura.</p>
+                            <select id="p_vf1" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="">Selecione Verdadeiro ou Falso...</option>
+                                <option value="V">Verdadeiro</option>
+                                <option value="F">Falso (Suco de caixinha perde fibras e contém aditivos/açúcar)</option>
+                            </select>
+                        </div>
+
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                            <p class="font-bold text-slate-800">B) Alimentos In Natura ou minimamente processados devem ser a base da alimentação diária.</p>
+                            <select id="p_vf2" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="">Selecione Verdadeiro ou Falso...</option>
+                                <option value="V">Verdadeiro (É a Regra de Ouro do Guia Alimentar)</option>
+                                <option value="F">Falso</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARTE 3: ESTUDO DE CASO DISCURSIVO -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-sm sm:text-base border-b border-slate-200 pb-2">
+                        <span class="w-7 h-7 bg-emerald-700 text-white rounded-lg flex items-center justify-center text-xs shrink-0">P3</span>
+                        <h3>Parte 3 — Estudo de Caso Prático (Investigador Nutricional)</h3>
+                    </div>
+
+                    <div class="p-4 sm:p-5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-3">
+                        <label class="block font-bold text-emerald-950 text-xs sm:text-sm md:text-base leading-relaxed">
+                            <strong>Estudo de Caso:</strong> Um colega seu costuma lanchar todos os dias um salgadinho de pacote e um refrigerante. Ele reclama que sente cansaço rápido no meio da aula e dores de cabeça. Como <strong>investigador nutricional</strong>, formule um conselho embasado explicando o motivo desse cansaço e sugira 2 trocas inteligentes de "comida de verdade" para o lanche dele:
+                        </label>
+                        <textarea id="p_discursiva" rows="4" placeholder="Escreva sua explicação técnica e as sugestões de trocas alimentares aqui..." class="w-full p-3.5 border border-slate-300 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white transition-all"></textarea>
+                    </div>
+                </div>
+
+                <!-- PAINEL DE RESULTADO E AÇÕES DA AVALIAÇÃO -->
+                <div class="pt-4 space-y-4">
+                    <div id="painel-resultado-avaliacao" class="hidden p-5 sm:p-6 bg-gradient-to-br from-slate-900 to-emerald-950 text-white rounded-2xl border-2 border-emerald-400/50 shadow-xl space-y-3">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-emerald-500/30 pb-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Resultado da Prova Final</span>
+                                <h4 class="text-xl sm:text-2xl font-black text-amber-300 font-game" id="aval-nota-txt">Nota Final: 10,0 / 10,0</h4>
+                            </div>
+                            <div id="aval-selo-badge" class="px-3.5 py-1.5 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md">
+                                🏆 Desempenho Excelente!
+                            </div>
+                        </div>
+
+                        <p id="aval-diagnostico-txt" class="text-xs md:text-sm text-emerald-100 leading-relaxed font-medium">
+                            Parabéns! Você demonstrou domínio total sobre a classificação de alimentos, leitura crítica de rótulos e escolhas conscientes!
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 justify-end">
+                        <button type="button" onclick="calcularAvaliacaoFinal()" class="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center space-x-2 shadow-md transition-all hover:scale-[1.02]">
+                            <i class="fa-solid fa-calculator text-base md:text-lg"></i>
+                            <span>Finalizar e Calcular Nota da Avaliação</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Rubrica de Avaliação da Professora -->
+            <div class="pt-6 border-t border-slate-200 space-y-4">
+                <div class="flex items-center gap-2 text-slate-800 font-bold text-xs sm:text-sm uppercase tracking-wide">
+                    <i class="fa-solid fa-table text-emerald-600"></i>
+                    <span>Matriz de Critérios Oficiais da Professora Verônica</span>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs md:text-sm border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-emerald-800 text-white">
+                                <th class="p-3 font-bold">Dimensão</th>
+                                <th class="p-3 font-bold text-emerald-100">Excelente (100%)</th>
+                                <th class="p-3 font-bold text-emerald-100">Suficiente (70%)</th>
+                                <th class="p-3 font-bold text-emerald-100">Em Desenvolv. (50%)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 bg-white text-xs">
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 font-bold text-slate-800">Conhecimento Conceitual (Partes 1 e 2)</td>
+                                <td class="p-3 text-slate-600">Acerta todas as questões objetivas e identifica com precisão a regra de ouro dos rótulos.</td>
+                                <td class="p-3 text-slate-600">Compreende a diferença geral, mas com pequenos deslizes na interpretação de ingredientes.</td>
+                                <td class="p-3 text-slate-600">Demonstra dúvidas na distinção entre alimentos in natura e ultraprocessados.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 font-bold text-slate-800">Aplicação Prática e Síntese (Parte 3)</td>
+                                <td class="p-3 text-slate-600">Apresenta conselho fundamentado e propõe 2 trocas alimentares ricas em comida de verdade.</td>
+                                <td class="p-3 text-slate-600">Propõe trocas aceitáveis, mas com justificativa pouco fundamentada.</td>
+                                <td class="p-3 text-slate-600">Resposta vaga ou sem propor substituições alimentares viáveis.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 6: CONCLUSÃO E JOGOS INTERATIVOS -->
+        <section id="sec-conclusao" class="tab-content hidden bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6 md:space-y-8">
+            <div class="flex items-center space-x-3 text-emerald-700 border-b border-slate-100 pb-4">
+                <div class="p-2.5 bg-emerald-100 rounded-xl text-emerald-700 shrink-0">
+                    <i class="fa-solid fa-flag-checkered text-xl md:text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-800">6. Conclusão e Jogos Educativos</h2>
+                    <p class="text-xs md:text-sm text-slate-500">Parabéns por cuidar do seu bem-estar! Divirta-se com os dois jogos educativos abaixo!</p>
+                </div>
+            </div>
+
+            <!-- Card de Parabenização -->
+            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col md:flex-row items-center gap-4 sm:gap-6 text-center md:text-left">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl sm:text-4xl shrink-0 border border-white/20 animate-bounce-gentle">
+                    🏆
+                </div>
+                <div class="space-y-1.5">
+                    <h3 class="text-lg sm:text-xl font-bold font-game tracking-wide">Você concluiu a investigação "Aprender para Comer"!</h3>
+                    <p class="text-xs md:text-sm text-emerald-100 leading-relaxed">
+                        Ao refletir sobre os alimentos que consome e aprender a ler rótulos, você deu um grande passo rumo a uma vida mais saudável, consciente e autônoma. Agora, divirta-se consolidando seu aprendizado nos <strong>Jogos de Alimentação Saudável</strong>!
+                    </p>
+                </div>
+            </div>
+
+            <!-- SELETOR DOS MÓDULOS DE JOGO -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button type="button" onclick="ativarModuloJogo('arcade')" id="btn-mod-arcade" class="flex-1 p-3.5 sm:p-4 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl font-extrabold font-game text-xs sm:text-sm flex items-center justify-center gap-3 shadow-lg border-2 border-emerald-300 transition-all">
+                    <i class="fa-solid fa-basket-shopping text-xl sm:text-2xl text-amber-300 shrink-0"></i>
+                    <div class="text-left">
+                        <div>Jogo 1: Pegue Comida de Verdade</div>
+                        <div class="text-[10px] text-emerald-200 font-normal">Estilo Escola Games (Pegar alimentos saudáveis no cesto)</div>
+                    </div>
+                </button>
+
+                <button type="button" onclick="ativarModuloJogo('trilha')" id="btn-mod-trilha" class="flex-1 p-3.5 sm:p-4 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-2xl font-extrabold font-game text-xs sm:text-sm flex items-center justify-center gap-3 border-2 border-slate-700 transition-all">
+                    <i class="fa-solid fa-dice text-xl sm:text-2xl text-amber-400 shrink-0"></i>
+                    <div class="text-left">
+                        <div>Jogo 2: Trilha do Conhecimento</div>
+                        <div class="text-[10px] text-slate-400 font-normal">Jogo de Tabuleiro com Perguntas e Respostas</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- JOGO 1: ARCADE DO PRATO SAUDÁVEL (ESTILO ESCOLA GAMES) -->
+            <div id="box-game-arcade" class="bg-gradient-to-b from-slate-900 via-emerald-950 to-slate-900 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 text-white shadow-2xl border-2 sm:border-4 border-emerald-400 relative overflow-hidden space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-slate-950/80 p-3.5 sm:p-4 rounded-2xl border border-emerald-500/30">
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <div class="p-2.5 sm:p-3 bg-emerald-400 text-slate-950 rounded-2xl shadow-lg font-bold text-xl sm:text-2xl shrink-0">
+                            🍎
+                        </div>
+                        <div>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-400/30">Inspirado no Escola Games</span>
+                            <h3 class="text-lg sm:text-xl md:text-2xl font-extrabold font-game text-amber-300">Pegue Comida de Verdade!</h3>
+                            <p class="text-[11px] sm:text-xs text-emerald-100">Mova a cesta com o mouse ou toque para pegar <strong>frutas, legumes e ovos</strong> e fuja dos <strong>ultraprocessados</strong>!</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-around w-full md:w-auto gap-3 bg-slate-900 px-4 py-2 rounded-xl border border-emerald-400/30 shrink-0">
+                        <div class="text-center">
+                            <div class="text-[9px] sm:text-[10px] text-emerald-300 uppercase font-bold">Pontos</div>
+                            <div id="arcade-score" class="text-lg sm:text-xl font-black font-game text-amber-300">0</div>
+                        </div>
+                        <div class="h-7 w-px bg-slate-800"></div>
+                        <div class="text-center">
+                            <div class="text-[9px] sm:text-[10px] text-rose-400 uppercase font-bold">Vidas</div>
+                            <div id="arcade-lives" class="text-lg sm:text-xl font-black font-game text-rose-400">❤️❤️❤️</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas da Partida -->
+                <div class="relative w-full aspect-[16/10] sm:aspect-[16/9] min-h-[280px] max-h-[420px] bg-slate-950 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-inner flex items-center justify-center">
+                    <canvas id="arcade-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+                    <!-- Tela de Início / Fim do Arcade -->
+                    <div id="arcade-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 text-center space-y-3 sm:space-y-4">
+                        <div class="text-3xl sm:text-4xl animate-bounce">🥗</div>
+                        <h4 class="text-xl sm:text-2xl font-black font-game text-amber-300" id="arc-over-title">Pronto para Desfilar Saúde?</h4>
+                        <p class="text-xs text-slate-300 max-w-md leading-relaxed" id="arc-over-desc">
+                            Colete alimentos <strong>In Natura</strong> e <strong>Minimamente Processados</strong> para somar pontos! Evite refrigerantes e salgadinhos de pacote para não perder vidas!
+                        </p>
+                        <button type="button" onclick="iniciarArcadeGame()" class="px-6 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold font-game text-sm sm:text-base rounded-2xl shadow-xl transition-all hover:scale-105 border-2 border-amber-200 flex items-center gap-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Começar o Jogo!</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOGO 2: TRILHA DA ALIMENTAÇÃO SAUDÁVEL (TABULEIRO) -->
+            <div id="box-game-trilha" class="hidden bg-gradient-to-b from-amber-500 via-emerald-600 to-teal-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 text-white shadow-2xl border-2 sm:border-4 border-amber-300 relative overflow-hidden space-y-5">
+                <!-- Header do Jogo -->
+                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-amber-300/40 flex flex-col md:flex-row justify-between items-center gap-3">
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <div class="p-2.5 sm:p-3 bg-amber-400 text-amber-950 rounded-2xl shadow-lg font-bold text-xl sm:text-2xl shrink-0">
+                            🎲
+                        </div>
+                        <div>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-amber-300 tracking-wider uppercase bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-400/30">Jogo Educativo</span>
+                            <h3 class="text-lg sm:text-xl md:text-2xl font-extrabold font-game text-amber-200">Trilha da Alimentação Consciente</h3>
+                            <p class="text-xs text-amber-100">Avance pelas casas e responda aos desafios nutricionais para vencer!</p>
+                        </div>
+                    </div>
+
+                    <!-- Placar e Controles -->
+                    <div class="flex items-center justify-around w-full md:w-auto gap-3 bg-slate-950/70 px-4 py-2 rounded-xl border border-amber-400/30 shrink-0">
+                        <div class="text-center">
+                            <div class="text-[9px] sm:text-[10px] text-amber-200 uppercase font-bold">Sua Pontuação</div>
+                            <div id="game-score" class="text-lg sm:text-xl font-black font-game text-amber-300">0 pts</div>
+                        </div>
+                        <div class="h-7 w-px bg-slate-700"></div>
+                        <div class="text-center">
+                            <div class="text-[9px] sm:text-[10px] text-emerald-200 uppercase font-bold">Posição</div>
+                            <div id="game-position" class="text-lg sm:text-xl font-black font-game text-emerald-300">Casa 1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Painel de Ação do Jogo -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <!-- Status e Turno -->
+                    <div class="bg-slate-900/70 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-white/10 flex flex-col justify-between space-y-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block mb-1">Modo de Jogo</span>
+                            <div class="flex gap-2">
+                                <button onclick="setGameMode('solo')" id="mode-solo" class="flex-1 py-1.5 px-3 bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md">
+                                    <i class="fa-solid fa-user mr-1"></i> Solo
+                                </button>
+                                <button onclick="setGameMode('vs')" id="mode-vs" class="flex-1 py-1.5 px-3 bg-slate-800 text-white font-bold text-xs rounded-xl transition-all hover:bg-slate-700">
+                                    <i class="fa-solid fa-robot mr-1"></i> vs Robô
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="turn-indicator" class="p-2.5 bg-emerald-900/60 rounded-xl border border-emerald-400/30 text-xs font-semibold text-emerald-100 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Sua Vez de Jogar!</span>
+                        </div>
+
+                        <button id="btn-roll-dice" onclick="jogarDado()" class="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-extrabold font-game text-sm sm:text-base rounded-2xl shadow-xl transition-all transform active:scale-95 flex items-center justify-center gap-2 border-2 border-amber-200">
+                            <i class="fa-solid fa-dice text-lg"></i>
+                            <span>Girar Dado / Tirar Carta</span>
+                        </button>
+                    </div>
+
+                    <!-- Visualizador do Dado / Carta -->
+                    <div class="bg-slate-900/70 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center space-y-2">
+                        <div id="dice-display" class="w-14 h-14 sm:w-16 sm:h-16 bg-white text-slate-900 font-black font-game text-2xl sm:text-3xl rounded-2xl flex items-center justify-center shadow-2xl border-4 border-amber-400 transition-all">
+                            🎲
+                        </div>
+                        <p id="dice-msg" class="text-xs text-amber-100 font-medium max-w-xs">Clique no botão para girar o dado e andar pela trilha!</p>
+                    </div>
+
+                    <!-- Mensagens do Jogo / Quiz Card -->
+                    <div id="game-event-card" class="bg-slate-900/90 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-amber-400/40 flex flex-col justify-between space-y-3">
+                        <div class="flex items-center gap-2 text-amber-300 font-bold text-xs uppercase tracking-wide">
+                            <i class="fa-solid fa-scroll"></i>
+                            <span id="event-title">Desafio Nutricional</span>
+                        </div>
+                        <p id="event-desc" class="text-xs text-slate-200 leading-relaxed font-medium">
+                            Avance pelas casas da trilha! Ao cair nas casas de Quiz, responda corretamente para ganhar pontos extras e avançar rápido.
+                        </p>
+                        <div id="quiz-options" class="hidden space-y-2 pt-1">
+                            <!-- Opções dinâmicas do quiz serão inseridas aqui via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabuleiro da Trilha (20 Casas) -->
+                <div class="bg-slate-950/80 p-3 sm:p-4 rounded-2xl border border-amber-400/30">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 text-[10px] sm:text-xs font-bold text-amber-200 uppercase tracking-wider gap-1">
+                        <span><i class="fa-solid fa-map mr-1"></i> Tabuleiro da Alimentação Consciente</span>
+                        <span>Chegada: Casa 20 (Prato Saudável)</span>
+                    </div>
+
+                    <div id="board-grid" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-2">
+                        <!-- Casas da Trilha serão geradas dinamicamente via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner Link Escola Games -->
+            <div class="p-4 bg-slate-900 rounded-2xl border border-amber-300/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                <div class="flex flex-col sm:flex-row items-center gap-3">
+                    <div class="p-2.5 bg-amber-400 text-slate-900 rounded-xl font-bold text-lg shrink-0">
+                        🎮
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold font-game text-amber-200 text-xs sm:text-sm">Gostou da experiência?</h4>
+                        <p class="text-xs text-slate-300">Acesse também o jogo original diretamente no portal Escola Games:</p>
+                    </div>
+                </div>
+                <a href="https://www.escolagames.com.br/jogos/alimentacao-saudavel" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md transition-all shrink-0 hover:scale-105">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Jogar no Escola Games Original</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+            </div>
+
+            <!-- Dicas Finais -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 text-xs md:text-sm leading-relaxed space-y-2">
+                <p><strong>Próximos passos recomendados:</strong></p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>Compartilhe o aprendizado com sua família na hora das compras no mercado.</li>
+                    <li>Verifique se sua resposta foi devidamente enviada no Google Forms ou por e-mail para <strong>veronicaapprodrigues@gmail.com</strong>.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-8 md:mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center text-slate-500 text-xs md:text-sm space-y-1">
+            <p class="font-semibold text-slate-700">WebQuest Interativa — Aprender para Comer</p>
+            <p>Professora Verônica Rodrigues • Contato: <span class="font-mono text-emerald-700 select-all">veronicaapprodrigues@gmail.com</span></p>
+        </div>
+    </footer>
+
+    <!-- ÁREA OCULTA / TEMPLATE DEDICADO PARA IMPRESSÃO DO PDF -->
+    <div id="pdf-template" class="hidden p-8 bg-white text-slate-900 font-sans">
+        <div style="border-bottom: 3px solid #059669; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0;">Relatório WebQuest: Aprender para Comer</h1>
+                <p style="font-size: 11px; color: #4b5563; margin-top: 4px;">Atividade de Educação Alimentar e Nutrição</p>
+            </div>
+            <div style="text-align: right; font-size: 10px; color: #6b7280;">
+                Destino: veronicaapprodrigues@gmail.com
+            </div>
+        </div>
+
+        <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+            <table style="width: 100%; font-size: 12px;">
+                <tr>
+                    <td style="padding: 2px 0;"><strong>Estudante:</strong> <span id="pdf-nome">-</span></td>
+                    <td style="padding: 2px 0;"><strong>Turma / Ano:</strong> <span id="pdf-turma">-</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 0;"><strong>Data de Conclusão:</strong> <span id="pdf-data">-</span></td>
+                    <td style="padding: 2px 0;"><strong>Professora:</strong> Verônica Rodrigues</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <div style="margin-bottom: 14px;">
+                <p style="font-weight: bold; font-size: 12px; color: #064e3b; margin-bottom: 4px;">1. Diferença entre Alimento In Natura e Ultraprocessado:</p>
+                <div id="pdf-q1" style="font-size: 11px; line-height: 1.4; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; white-space: pre-wrap;"></div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <p style="font-weight: bold; font-size: 12px; color: #064e3b; margin-bottom: 4px;">2. Análise de Rótulo / Ingredientes Não Saudáveis:</p>
+                <div id="pdf-q2" style="font-size: 11px; line-height: 1.4; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; white-space: pre-wrap;"></div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <p style="font-weight: bold; font-size: 12px; color: #064e3b; margin-bottom: 4px;">3. Cardápio Diário Equilibrado Proposto:</p>
+                <div id="pdf-q3" style="font-size: 11px; line-height: 1.4; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; white-space: pre-wrap; font-family: monospace;"></div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <p style="font-weight: bold; font-size: 12px; color: #064e3b; margin-bottom: 4px;">4. Regra de Ouro do Guia Alimentar (Múltipla Escolha):</p>
+                <div id="pdf-q4" style="font-size: 11px; line-height: 1.4; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px;"></div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <p style="font-weight: bold; font-size: 12px; color: #064e3b; margin-bottom: 4px;">5. Mudança de Hábito Pessoal Pretendida:</p>
+                <div id="pdf-q5" style="font-size: 11px; line-height: 1.4; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; white-space: pre-wrap;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Component for Notifications -->
+    <div id="toast" class="fixed bottom-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none max-w-xs sm:max-w-sm">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg shrink-0"></i>
+        <span id="toast-msg" class="text-xs sm:text-sm font-medium">Notificação</span>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL E LÓGICA DE INTERATIVIDADE -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const dataInput = document.getElementById('alunoData');
+            if (dataInput) dataInput.value = today;
+
+            renderBoard();
+            iniciarJogo9(0);
+            calcularPontuacaoJogo10();
+            initArcadeCanvas();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            const selectedSec = document.getElementById(`sec-${tabId}`);
+            const selectedTab = document.getElementById(`tab-${tabId}`);
+
+            if (selectedSec) selectedSec.classList.remove('hidden');
+            if (selectedTab) selectedTab.classList.add('active');
+
+            if (tabId === 'conclusao') {
+                setTimeout(() => {
+                    resizeArcadeCanvas();
+                }, 100);
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showToast(message, iconClass = 'fa-circle-check text-emerald-400') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            toastIcon.className = `fa-solid ${iconClass}`;
+            
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 4000);
+        }
+
+        function scrollToActivity(nextNum) {
+            const target = document.getElementById(`card-atv-${nextNum}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.classList.add('ring-4', 'ring-emerald-500', 'ring-offset-2');
+                setTimeout(() => {
+                    target.classList.remove('ring-4', 'ring-emerald-500', 'ring-offset-2');
+                }, 2500);
+            }
+        }
+
+        function verificarAtividade1() {
+            const a = document.getElementById('atv1_a').value;
+            const b = document.getElementById('atv1_b').value;
+            const c = document.getElementById('atv1_c').value;
+            const fb = document.getElementById('fb-atv-1');
+
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (a === 'In Natura' && b === 'Processado' && c === 'Ultraprocessado') {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Parabéns!</strong> Todos os trios foram classificados corretamente.</span>
+                        <button type="button" onclick="scrollToActivity(2)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 2 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Incorreto.</strong> Releia as definições na Etapa 2 e tente novamente.</span>
+                        <button type="button" onclick="resetAtividade1()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Tentar Novamente <i class="fa-solid fa-rotate-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function resetAtividade1() {
+            document.getElementById('atv1_a').value = '';
+            document.getElementById('atv1_b').value = '';
+            document.getElementById('atv1_c').value = '';
+            document.getElementById('fb-atv-1').classList.add('hidden');
+        }
+
+        function verificarAtividade2() {
+            const prod = document.getElementById('atv2_produto').value.trim();
+            const ingr = document.getElementById('atv2_ingredientes').value.trim();
+            const fb = document.getElementById('fb-atv-2');
+
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (prod.length >= 3 && ingr.length >= 10) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Ótima investigação!</strong> O produto e seus componentes foram registrados.</span>
+                        <button type="button" onclick="scrollToActivity(3)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 3 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Incompleto.</strong> Pesquise o nome do produto e seus ingredientes.</span>
+                        <button type="button" onclick="document.getElementById('atv2_produto').focus()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Completar <i class="fa-solid fa-pen ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function verificarAtividade3() {
+            const text = document.getElementById('atv3_cardapio').value.trim();
+            const fb = document.getElementById('fb-atv-3');
+
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (text.length >= 15) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Excelente cardápio!</strong> Refeições ricas em comida de verdade garantem mais saúde.</span>
+                        <button type="button" onclick="scrollToActivity(4)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 4 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Descreva com mais detalhes.</strong> Inclua opções para o dia inteiro.</span>
+                        <button type="button" onclick="document.getElementById('atv3_cardapio').focus()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Tentar Novamente <i class="fa-solid fa-rotate-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function verificarAtividade4() {
+            const radios = document.getElementsByName('quiz_task4');
+            let selected = null;
+            for (const r of radios) {
+                if (r.checked) selected = r.value;
+            }
+            const fb = document.getElementById('fb-atv-4');
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (selected === 'A') {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Exato!</strong> Maltodextrina e Xaropes são açúcares adicionados.</span>
+                        <button type="button" onclick="scrollToActivity(5)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 5 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Incorreto.</strong> Dica: Procure por maltodextrina e xaropes de milho.</span>
+                        <button type="button" onclick="resetAtividade4()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Tentar Novamente <i class="fa-solid fa-rotate-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function resetAtividade4() {
+            const radios = document.getElementsByName('quiz_task4');
+            for (const r of radios) r.checked = false;
+            document.getElementById('fb-atv-4').classList.add('hidden');
+        }
+
+        function verificarAtividade5() {
+            const v = document.getElementById('sem_verde').value.trim();
+            const a = document.getElementById('sem_amarelo').value.trim();
+            const r = document.getElementById('sem_vermelho').value.trim();
+            const fb = document.getElementById('fb-atv-5');
+
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (v.length > 2 && a.length > 2 && r.length > 2) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Semáforo perfeito!</strong> Saber dosar a frequência é a chave para a saúde.</span>
+                        <button type="button" onclick="scrollToActivity(6)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 6 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Preencha os três grupos.</strong> Digite exemplos para as luzes verde, amarela e vermelha.</span>
+                        <button type="button" onclick="document.getElementById('sem_verde').focus()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Completar <i class="fa-solid fa-pen ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function calcularAgua() {
+            const peso = parseFloat(document.getElementById('input-peso-agua').value);
+            if (!peso || peso <= 0) {
+                showToast("Por favor, digite seu peso em kg.", "fa-triangle-exclamation text-amber-400");
+                return;
+            }
+
+            const ml = Math.round(peso * 35);
+            const copos = (ml / 200).toFixed(1);
+
+            document.getElementById('valor-agua-ml').innerText = `${ml} ml (${copos} copos)`;
+            document.getElementById('resultado-agua').classList.remove('hidden');
+            showToast(`Sua meta calculada é de ${ml} ml por dia!`, "fa-glass-water text-cyan-400");
+        }
+
+        function verificarAtividade6() {
+            const peso = parseFloat(document.getElementById('input-peso-agua').value);
+            const fb = document.getElementById('fb-atv-6');
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (peso > 0) {
+                calcularAgua();
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Cálculo efetuado!</strong> Lembre-se de beber água ao longo do dia.</span>
+                        <button type="button" onclick="scrollToActivity(7)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 7 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Digite um peso válido em kg.</strong> Exemplo: 45 ou 60.</span>
+                        <button type="button" onclick="document.getElementById('input-peso-agua').focus()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Tentar Novamente <i class="fa-solid fa-rotate-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function verificarAtividade7() {
+            const text = document.getElementById('atv7_justificativa').value.trim();
+            const fb = document.getElementById('fb-atv-7');
+
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (text.length >= 10) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Análise correta!</strong> Lanches in natura evitam as quedas bruscas de energia.</span>
+                        <button type="button" onclick="scrollToActivity(8)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 8 <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Escreva uma justificativa.</strong> Explique qual opção dá mais energia limpa.</span>
+                        <button type="button" onclick="document.getElementById('atv7_justificativa').focus()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Tentar Novamente <i class="fa-solid fa-rotate-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function verificarAtividade8() {
+            const chk1 = document.getElementById('chk-meta-1').checked;
+            const chk2 = document.getElementById('chk-meta-2').checked;
+            const chk3 = document.getElementById('chk-meta-3').checked;
+            const chk4 = document.getElementById('chk-meta-4').checked;
+            const text = document.getElementById('tarefa_q8').value.trim();
+            const fb = document.getElementById('fb-atv-8');
+
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if ((chk1 || chk2 || chk3 || chk4) && text.length >= 8) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Excelente compromisso!</strong> Pequenas metas diárias trazem grandes transformações.</span>
+                        <button type="button" onclick="scrollToActivity(9)" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-all text-xs shrink-0">
+                            Ir para Atividade 9 (Jogo 1) <i class="fa-solid fa-arrow-down ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <strong>Selecione ao menos 1 meta</strong> e descreva como envolverá sua família.</span>
+                        <button type="button" onclick="document.getElementById('tarefa_q8').focus()" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Completar <i class="fa-solid fa-pen ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        const produtosJogo9 = [
+            {
+                nome: 'Cereal "Fitness Gold"',
+                ingredientes: [
+                    { texto: 'Farinha de milho integral,', bad: false },
+                    { texto: 'Maltodextrina,', bad: true, desc: 'Açúcar disfarçado que eleva a glicemia!' },
+                    { texto: 'Xarope de glicose,', bad: true, desc: 'Açúcar líquido concentrado nocivo.' },
+                    { texto: 'Açúcar invertido,', bad: true, desc: 'Açúcar quimicamente processado.' },
+                    { texto: 'Sal,', bad: false },
+                    { texto: 'Gordura vegetal hidrogenada,', bad: true, desc: 'Gordura trans nociva ao coração.' },
+                    { texto: 'Aromatizante sintético de mel,', bad: true, desc: 'Aditivo químico para imitar sabor natural.' },
+                    { texto: 'Corante caramelo IV.', bad: true, desc: 'Aditivo sob suspeita de efeitos tóxicos.' }
+                ]
+            },
+            {
+                nome: 'Néctar de Fruta Caixinha',
+                ingredientes: [
+                    { texto: 'Água,', bad: false },
+                    { texto: 'Suco concentrado de uva (20%),', bad: false },
+                    { texto: 'Açúcar refinado,', bad: true, desc: 'Açúcar adicionado em alta dosagem.' },
+                    { texto: 'Xarope de milho de alta frutose,', bad: true, desc: 'Açúcar industrial de altíssimo impacto.' },
+                    { texto: 'Acidulante ácido cítrico (INS 330),', bad: true, desc: 'Aditivo químico para acidez.' },
+                    { texto: 'Conservador sorbato de potássio,', bad: true, desc: 'Conservante sintético industrial.' },
+                    { texto: 'Corante artificial tartrazina.', bad: true, desc: 'Corante associado a alergias.' }
+                ]
+            },
+            {
+                nome: 'Biscoito Waffle Choco',
+                ingredientes: [
+                    { texto: 'Farinha de trigo enriquecida,', bad: false },
+                    { texto: 'Açúcar,', bad: true, desc: 'Primeiro ingrediente doce em excesso.' },
+                    { texto: 'Gordura vegetal interesterificada,', bad: true, desc: 'Gordura industrial pesada.' },
+                    { texto: 'Cacau em pó,', bad: false },
+                    { texto: 'Emulsificante lecitina de soja,', bad: true, desc: 'Aditivo de textura sintética.' },
+                    { texto: 'Fermento químico bicarbonato,', bad: false },
+                    { texto: 'Aromatizante vanilina artificial,', bad: true, desc: 'Cheiro artificial de baunilha.' },
+                    { texto: 'Estabilizante INS 471.', bad: true, desc: 'Aditivo conservador ultraprocessado.' }
+                ]
+            }
+        ];
+
+        let prodIndexJ9 = 0;
+        let selecionadosJ9 = new Set();
+
+        function iniciarJogo9(index) {
+            prodIndexJ9 = index;
+            selecionadosJ9.clear();
+
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`btn-prod-${i}`);
+                if (btn) {
+                    btn.className = (i === index) ?
+                        "p-2.5 bg-indigo-700 border border-amber-400 rounded-xl text-xs font-bold text-left flex items-center gap-2 transition-all shadow-md" :
+                        "p-2.5 bg-indigo-950/80 hover:bg-indigo-800 border border-indigo-400/30 rounded-xl text-xs font-bold text-left flex items-center gap-2 transition-all opacity-80";
+                }
+            });
+
+            const prod = produtosJogo9[index];
+            document.getElementById('j9-nome-produto').innerText = `Produto: ${prod.nome}`;
+            
+            const totalArmadilhas = prod.ingredientes.filter(i => i.bad).length;
+            document.getElementById('j9-total').innerText = totalArmadilhas;
+            document.getElementById('j9-contador').innerText = '0';
+
+            const box = document.getElementById('j9-ingredientes-box');
+            box.innerHTML = '';
+
+            prod.ingredientes.forEach((ing, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = `j9-ing-${idx}`;
+                btn.className = "px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 transition-all";
+                btn.innerText = ing.texto;
+                btn.onclick = () => alternarIngredienteJ9(idx);
+                box.appendChild(btn);
+            });
+
+            document.getElementById('j9-feedback').innerHTML = '<span class="text-indigo-200">Clique nos ingredientes que considera perigosos/ultraprocessados.</span>';
+            document.getElementById('fb-atv-9').classList.add('hidden');
+            document.getElementById('actions-atv-9').classList.add('hidden');
+        }
+
+        function alternarIngredienteJ9(idx) {
+            const btn = document.getElementById(`j9-ing-${idx}`);
+            if (selecionadosJ9.has(idx)) {
+                selecionadosJ9.delete(idx);
+                btn.className = "px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 transition-all";
+            } else {
+                selecionadosJ9.add(idx);
+                btn.className = "px-2.5 py-1.5 bg-amber-400 text-slate-950 font-extrabold rounded-lg text-xs border border-amber-300 transition-all shadow-sm";
+            }
+            document.getElementById('j9-contador').innerText = selecionadosJ9.size;
+        }
+
+        function verificarJogo9() {
+            const prod = produtosJogo9[prodIndexJ9];
+            let acertos = 0;
+            let erros = 0;
+
+            prod.ingredientes.forEach((ing, idx) => {
+                const isSelected = selecionadosJ9.has(idx);
+                const btn = document.getElementById(`j9-ing-${idx}`);
+
+                if (ing.bad && isSelected) {
+                    acertos++;
+                    if (btn) btn.className = "px-2.5 py-1.5 bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs border border-emerald-300";
+                } else if (ing.bad && !isSelected) {
+                    if (btn) btn.className = "px-2.5 py-1.5 bg-rose-600 text-white font-bold rounded-lg text-xs border border-rose-400 animate-pulse";
+                } else if (!ing.bad && isSelected) {
+                    erros++;
+                    if (btn) btn.className = "px-2.5 py-1.5 bg-amber-600 text-white rounded-lg text-xs border border-amber-400";
+                }
+            });
+
+            const totalBad = prod.ingredientes.filter(i => i.bad).length;
+            const fbAtv = document.getElementById('fb-atv-9');
+            const actAtv = document.getElementById('actions-atv-9');
+
+            fbAtv.classList.remove('hidden', 'bg-emerald-950', 'text-emerald-200', 'bg-rose-950', 'text-rose-200');
+            actAtv.classList.remove('hidden');
+
+            if (acertos === totalBad && erros === 0) {
+                fbAtv.classList.add('bg-emerald-950', 'text-emerald-200');
+                fbAtv.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> <strong>Parabéns!</strong> Você identificou todas as ${totalBad} armadilhas químicas deste rótulo!`;
+                actAtv.innerHTML = `
+                    <button type="button" onclick="scrollToActivity(10)" class="w-full sm:w-auto px-3 py-1.5 bg-amber-400 text-slate-950 font-extrabold rounded-xl hover:bg-amber-300 transition-all text-xs">
+                        Ir para Atividade 10 (Jogo 2) <i class="fa-solid fa-arrow-down ml-1"></i>
+                    </button>
+                `;
+                playSoundEffect('correct');
+            } else {
+                fbAtv.classList.add('bg-rose-950', 'text-rose-200');
+                fbAtv.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> Encontradas ${acertos} de ${totalBad} armadilhas. As em vermelho eram aditivos não marcados.`;
+                actAtv.innerHTML = `
+                    <button type="button" onclick="iniciarJogo9(${prodIndexJ9})" class="w-full sm:w-auto px-3 py-1.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-all text-xs">
+                        Tentar Novamente <i class="fa-solid fa-rotate-right ml-1"></i>
+                    </button>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        let escolhaJ10 = { hortalica: 0, carb: 0, legum: 0, prot: 0 };
+
+        function selecionarItemJogo10(grupo, index) {
+            escolhaJ10[grupo] = index;
+
+            const prefixo = grupo === 'hortalica' ? 'j10-h' : grupo === 'carb' ? 'j10-c' : grupo === 'legum' ? 'j10-l' : 'j10-p';
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`${prefixo}-${i}`);
+                if (btn) {
+                    if (i === index) {
+                        btn.className = "w-full text-left p-2 bg-emerald-700 text-white font-bold rounded-lg text-[11px] border border-emerald-400 transition-all shadow-sm";
+                    } else {
+                        btn.className = "w-full text-left p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-[11px] font-medium transition-all opacity-70";
+                    }
+                }
+            });
+
+            calcularPontuacaoJogo10();
+        }
+
+        function calcularPontuacaoJogo10() {
+            let score = 100;
+
+            if (escolhaJ10.hortalica === 1) score -= 15;
+            else if (escolhaJ10.hortalica === 2) score -= 35;
+
+            if (escolhaJ10.carb === 1) score -= 10;
+            else if (escolhaJ10.carb === 2) score -= 30;
+
+            if (escolhaJ10.legum === 2) score -= 25;
+
+            if (escolhaJ10.prot === 1) score -= 15;
+            else if (escolhaJ10.prot === 2) score -= 35;
+
+            score = Math.max(0, score);
+            document.getElementById('j10-score').innerText = `${score} / 100`;
+
+            const statusEl = document.getElementById('j10-status');
+            const sinergiaEl = document.getElementById('j10-sinergia');
+            const expEl = document.getElementById('j10-explicacao');
+
+            if (score >= 90) {
+                statusEl.innerText = "🏆 Prato Nutritivo Exemplar";
+                statusEl.className = "text-xs font-extrabold text-emerald-400 mt-1";
+                sinergiaEl.innerText = "✨ Absorção de Ferro + Fibras Ativas!";
+                expEl.innerText = "Parabéns! Você montou um prato baseado em comida de verdade. A metade composta por vegetais garante micronutrientes e a combinação de feijão com proteínas limpas garante energia sustentável.";
+            } else if (score >= 60) {
+                statusEl.innerText = "⚠️ Prato Aceitável / Mediano";
+                statusEl.className = "text-xs font-extrabold text-amber-300 mt-1";
+                sinergiaEl.innerText = "⚡ Sinergia Parcial";
+                expEl.innerText = "Seu prato é razoável, mas contém alimentos processados ou falta de vegetais frescos. Tente substituir os itens amarelos/vermelhos por comida in natura para chegar aos 100 pontos!";
+            } else {
+                statusEl.innerText = "🚨 Alerta: Excesso de Ultraprocessados";
+                statusEl.className = "text-xs font-extrabold text-rose-400 mt-1";
+                sinergiaEl.innerText = "❌ Baixa Nutrição / Excesso de Sal";
+                expEl.innerText = "Atenção! Seu prato contém produtos ultraprocessados cheios de aditivos químicos, sódio e gordura hidrogenada. Substitua por alimentos naturais preparados em casa.";
+            }
+
+            return score;
+        }
+
+        function verificarAtividade10() {
+            const score = calcularPontuacaoJogo10();
+            const textAnalise = document.getElementById('tarefa_q10').value.trim();
+            const fb = document.getElementById('fb-atv-10');
+
+            fb.classList.remove('hidden', 'bg-emerald-950', 'text-emerald-200', 'bg-rose-950', 'text-rose-200');
+
+            if (score >= 80 && textAnalise.length >= 8) {
+                fb.classList.add('bg-emerald-950', 'text-emerald-200');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-trophy text-amber-400 mr-1"></i> <strong>SENSACIONAL!</strong> Você concluiu todas as 10 Atividades Práticas com pontuação alta!</span>
+                        <button type="button" onclick="switchTab('processo')" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-500 text-slate-950 font-bold rounded-lg hover:bg-emerald-400 transition-all text-xs shrink-0">
+                            Avançar para Etapa 4 (Recursos) <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('correct');
+                try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){}
+            } else {
+                fb.classList.add('bg-rose-950', 'text-rose-200');
+                fb.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <span class="text-xs"><i class="fa-solid fa-circle-xmark text-rose-400 mr-1"></i> Monte um prato com pontuação acima de 80 e escreva sua análise para concluir!</span>
+                        <button type="button" onclick="selecionarItemJogo10('hortalica', 0)" class="w-full sm:w-auto px-3 py-1.5 bg-rose-700 text-white font-bold rounded-lg hover:bg-rose-800 transition-all text-xs shrink-0">
+                            Ajustar Prato <i class="fa-solid fa-sliders ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                playSoundEffect('wrong');
+            }
+        }
+
+        function preencherDadosPDF() {
+            const nome = document.getElementById('alunoNome').value.trim();
+            const turma = document.getElementById('alunoTurma').value.trim();
+            const data = document.getElementById('alunoData').value;
+
+            if (!nome || !turma) {
+                showToast("Por favor, preencha o Nome Completo e a Turma antes de prosseguir.", "fa-triangle-exclamation text-amber-400");
+                if (!nome) document.getElementById('alunoNome').focus();
+                else if (!turma) document.getElementById('alunoTurma').focus();
+                return false;
+            }
+
+            const q4Radios = document.getElementsByName('q4');
+            let q4Value = "Não selecionado";
+            for (const radio of q4Radios) {
+                if (radio.checked) {
+                    q4Value = radio.value;
+                    break;
+                }
+            }
+
+            document.getElementById('pdf-nome').innerText = nome;
+            document.getElementById('pdf-turma').innerText = turma;
+            document.getElementById('pdf-data').innerText = data ? new Date(data).toLocaleDateString('pt-BR') : '-';
+            
+            document.getElementById('pdf-q1').innerText = document.getElementById('q1').value || 'Sem resposta.';
+            document.getElementById('pdf-q2').innerText = document.getElementById('q2').value || 'Sem resposta.';
+            document.getElementById('pdf-q3').innerText = document.getElementById('q3').value || 'Sem resposta.';
+            document.getElementById('pdf-q4').innerText = q4Value;
+            document.getElementById('pdf-q5').innerText = document.getElementById('q5').value || 'Sem considerações.';
+
+            return true;
+        }
+
+        function calcularAvaliacaoFinal() {
+            let pontos = 0;
+
+            const q1Radios = document.getElementsByName('p_q1');
+            let q1Val = '';
+            for (const r of q1Radios) { if (r.checked) q1Val = r.value; }
+            if (q1Val === 'B') pontos += 2.5;
+
+            const q2Radios = document.getElementsByName('p_q2');
+            let q2Val = '';
+            for (const r of q2Radios) { if (r.checked) q2Val = r.value; }
+            if (q2Val === 'B') pontos += 2.5;
+
+            const vf1 = document.getElementById('p_vf1').value;
+            const vf2 = document.getElementById('p_vf2').value;
+            if (vf1 === 'F') pontos += 1.25;
+            if (vf2 === 'V') pontos += 1.25;
+
+            const discText = document.getElementById('p_discursiva').value.trim();
+            if (discText.length >= 25) {
+                pontos += 2.5;
+            } else if (discText.length >= 10) {
+                pontos += 1.25;
+            }
+
+            const painel = document.getElementById('painel-resultado-avaliacao');
+            const notaTxt = document.getElementById('aval-nota-txt');
+            const badge = document.getElementById('aval-selo-badge');
+            const diagTxt = document.getElementById('aval-diagnostico-txt');
+
+            painel.classList.remove('hidden');
+            notaTxt.innerText = `Nota Final: ${pontos.toFixed(1).replace('.', ',')} / 10,0`;
+
+            if (pontos >= 8.5) {
+                badge.innerText = "🏆 Desempenho Excelente!";
+                badge.className = "px-4 py-2 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md";
+                diagTxt.innerText = "Excelente trabalho! Você compreendeu perfeitamente como classificar alimentos, desmascarar aditivos em rótulos e planejar uma rotina alimentar saudável!";
+                playSoundEffect('correct');
+                try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){}
+            } else if (pontos >= 6.0) {
+                badge.innerText = "👍 Desempenho Satisfatório";
+                badge.className = "px-4 py-2 bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md";
+                diagTxt.innerText = "Bom trabalho! Você teve um aproveitamento satisfatório. Revise as etapas de Introdução e Recursos para aprimorar ainda mais seus conhecimentos!";
+                playSoundEffect('correct');
+            } else {
+                badge.innerText = "⚠️ Precisa de Revisão";
+                badge.className = "px-4 py-2 bg-rose-500 text-white font-black text-xs rounded-xl shadow-md";
+                diagTxt.innerText = "Sua nota ficou abaixo da média. Recomendamos rever os vídeos explicativos da Etapa 2 e as dicas do Guia Alimentar na Etapa 4 antes de refazer a prova.";
+                playSoundEffect('wrong');
+            }
+
+            showToast(`Avaliação calculada: Nota ${pontos.toFixed(1)} / 10,0`, 'fa-award text-amber-400');
+        }
+
+        function gerarPDF() {
+            if (!preencherDadosPDF()) return;
+
+            const element = document.getElementById('pdf-template');
+            element.classList.remove('hidden');
+
+            const nomeAluno = document.getElementById('alunoNome').value.replace(/\s+/g, '_');
+
+            const opt = {
+                margin:       8,
+                filename:     `WebQuest_AprenderParaComer_${nomeAluno}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showToast("Gerando arquivo PDF do relatório...", "fa-spinner fa-spin text-emerald-400");
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.classList.add('hidden');
+                showToast("PDF baixado com sucesso no seu dispositivo!", "fa-circle-check text-emerald-400");
+            }).catch(err => {
+                element.classList.add('hidden');
+                showToast("Houve um erro ao gerar o PDF.", "fa-circle-xmark text-rose-400");
+            });
+        }
+
+        function enviarPorEmail() {
+            if (!preencherDadosPDF()) return;
+
+            const emailDestino = "veronicaapprodrigues@gmail.com";
+            const nome = document.getElementById('alunoNome').value;
+            const turma = document.getElementById('alunoTurma').value;
+            const q1 = document.getElementById('q1').value;
+            const q3 = document.getElementById('q3').value;
+
+            gerarPDF();
+
+            const assunto = encodeURIComponent(`WebQuest Aprender para Comer - ${nome} (${turma})`);
+            const corpo = encodeURIComponent(
+                `Olá Professora Verônica,\n\n` +
+                `Estou enviando o resultado da minha WebQuest "Aprender para Comer".\n\n` +
+                `Estudante: ${nome}\n` +
+                `Turma: ${turma}\n\n` +
+                `----------------------------------------\n` +
+                `RESUMO DAS RESPOSTAS:\n\n` +
+                `1) Diferença In Natura vs Ultraprocessado:\n${q1}\n\n` +
+                `2) Cardápio Proposto:\n${q3}\n\n` +
+                `----------------------------------------\n` +
+                `* NOTA IMPORTANTE: O arquivo PDF completo com minhas respostas foi baixado automaticamente no meu dispositivo. Estou anexando o PDF a esta mensagem de e-mail!\n\n` +
+                `Atenciosamente,\n${nome}`
+            );
+
+            showToast("Abrindo leitor de e-mail... Lembre-se de anexar o PDF baixado!", "fa-paper-plane text-emerald-400");
+
+            setTimeout(() => {
+                window.location.href = `mailto:${emailDestino}?subject=${assunto}&body=${corpo}`;
+            }, 1500);
+        }
+
+        function copiarResumo() {
+            if (!preencherDadosPDF()) return;
+
+            const nome = document.getElementById('alunoNome').value;
+            const turma = document.getElementById('alunoTurma').value;
+            const q1 = document.getElementById('q1').value;
+            const q2 = document.getElementById('q2').value;
+            const q3 = document.getElementById('q3').value;
+            const q5 = document.getElementById('q5').value;
+
+            const texto = `WEBQUEST APRENDER PARA COMER\nEstudante: ${nome}\nTurma: ${turma}\n\nQ1: ${q1}\n\nQ2: ${q2}\n\nQ3:\n${q3}\n\nQ5: ${q5}`;
+
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = texto;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+
+            showToast("Resumo copiado para a área de transferência!", "fa-copy text-teal-400");
+        }
+
+        function playSoundEffect(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'dice') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.setValueAtTime(160, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch(e){}
+        }
+
+        function ativarModuloJogo(modulo) {
+            const arcadeBox = document.getElementById('box-game-arcade');
+            const trilhaBox = document.getElementById('box-game-trilha');
+            const btnArcade = document.getElementById('btn-mod-arcade');
+            const btnTrilha = document.getElementById('btn-mod-trilha');
+
+            if (modulo === 'arcade') {
+                arcadeBox.classList.remove('hidden');
+                trilhaBox.classList.add('hidden');
+                btnArcade.className = "flex-1 p-3.5 sm:p-4 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl font-extrabold font-game text-xs sm:text-sm flex items-center justify-center gap-3 shadow-lg border-2 border-emerald-300 transition-all";
+                btnTrilha.className = "flex-1 p-3.5 sm:p-4 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-2xl font-extrabold font-game text-xs sm:text-sm flex items-center justify-center gap-3 border-2 border-slate-700 transition-all";
+                setTimeout(() => { resizeArcadeCanvas(); }, 50);
+            } else {
+                trilhaBox.classList.remove('hidden');
+                arcadeBox.classList.add('hidden');
+                btnTrilha.className = "flex-1 p-3.5 sm:p-4 bg-gradient-to-r from-amber-500 to-emerald-600 text-white rounded-2xl font-extrabold font-game text-xs sm:text-sm flex items-center justify-center gap-3 shadow-lg border-2 border-amber-300 transition-all";
+                btnArcade.className = "flex-1 p-3.5 sm:p-4 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-2xl font-extrabold font-game text-xs sm:text-sm flex items-center justify-center gap-3 border-2 border-slate-700 transition-all";
+            }
+        }
+
+        let arcCanvas, arcCtx;
+        let arcRunning = false;
+        let arcScore = 0;
+        let arcLives = 3;
+        let arcBasketX = 0;
+        let arcItems = [];
+        let arcAnimFrame;
+
+        const foodListHealthy = [
+            { emoji: '🍎', name: 'Maçã' },
+            { emoji: '🍌', name: 'Banana' },
+            { emoji: '🥦', name: 'Brócolis' },
+            { emoji: '🥕', name: 'Cenoura' },
+            { emoji: '🥚', name: 'Ovo' },
+            { emoji: '🍇', name: 'Uva' },
+            { emoji: '🥑', name: 'Abacate' }
+        ];
+
+        const foodListJunk = [
+            { emoji: '🥤', name: 'Refrigerante' },
+            { emoji: '🍟', name: 'Batata Frita' },
+            { emoji: '🍩', name: 'Donut' },
+            { emoji: '🍪', name: 'Biscoito Recheado' },
+            { emoji: '🍬', name: 'Bala' }
+        ];
+
+        function resizeArcadeCanvas() {
+            if (!arcCanvas) return;
+            const parent = arcCanvas.parentElement;
+            if (parent) {
+                arcCanvas.width = parent.clientWidth || 600;
+                arcCanvas.height = parent.clientHeight || 320;
+                if (!arcBasketX || arcBasketX > arcCanvas.width) {
+                    arcBasketX = arcCanvas.width / 2;
+                }
+            }
+        }
+
+        function initArcadeCanvas() {
+            arcCanvas = document.getElementById('arcade-canvas');
+            if (!arcCanvas) return;
+            arcCtx = arcCanvas.getContext('2d');
+
+            resizeArcadeCanvas();
+            window.addEventListener('resize', resizeArcadeCanvas);
+
+            const handleMove = (clientX) => {
+                const rect = arcCanvas.getBoundingClientRect();
+                arcBasketX = Math.max(25, Math.min(arcCanvas.width - 25, clientX - rect.left));
+            };
+
+            arcCanvas.addEventListener('mousemove', (e) => {
+                handleMove(e.clientX);
+            });
+
+            arcCanvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    handleMove(e.touches[0].clientX);
+                }
+            }, { passive: true });
+
+            arcCanvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    handleMove(e.touches[0].clientX);
+                }
+            }, { passive: true });
+        }
+
+        function iniciarArcadeGame() {
+            resizeArcadeCanvas();
+            arcScore = 0;
+            arcLives = 3;
+            arcItems = [];
+            arcRunning = true;
+
+            document.getElementById('arcade-overlay').classList.add('hidden');
+            document.getElementById('arcade-score').innerText = '0';
+            document.getElementById('arcade-lives').innerText = '❤️❤️❤️';
+
+            loopArcadeGame();
+        }
+
+        function loopArcadeGame() {
+            if (!arcRunning) return;
+
+            arcCtx.clearRect(0, 0, arcCanvas.width, arcCanvas.height);
+
+            // Fundo dinâmico leve
+            arcCtx.fillStyle = '#020617';
+            arcCtx.fillRect(0, 0, arcCanvas.width, arcCanvas.height);
+
+            // Linha da grama/chão
+            arcCtx.fillStyle = '#059669';
+            arcCtx.fillRect(0, arcCanvas.height - 10, arcCanvas.width, 10);
+
+            // Gerar itens caindo
+            if (Math.random() < 0.045) {
+                const isHealthy = Math.random() > 0.35;
+                const pool = isHealthy ? foodListHealthy : foodListJunk;
+                const picked = pool[Math.floor(Math.random() * pool.length)];
+
+                arcItems.push({
+                    x: Math.random() * (arcCanvas.width - 50) + 25,
+                    y: -20,
+                    speed: 2.5 + Math.random() * 2.5,
+                    emoji: picked.emoji,
+                    isHealthy: isHealthy
+                });
+            }
+
+            // Desenhar cesto
+            const basketY = arcCanvas.height - 30;
+            arcCtx.font = '34px sans-serif';
+            arcCtx.textAlign = 'center';
+            arcCtx.fillText('🧺', arcBasketX, basketY);
+
+            // Atualizar e desenhar itens
+            for (let i = arcItems.length - 1; i >= 0; i--) {
+                const item = arcItems[i];
+                item.y += item.speed;
+
+                arcCtx.font = '26px sans-serif';
+                arcCtx.fillText(item.emoji, item.x, item.y);
+
+                // Colisão com o cesto
+                if (Math.abs(item.x - arcBasketX) < 35 && Math.abs(item.y - basketY) < 25) {
+                    if (item.isHealthy) {
+                        arcScore += 10;
+                        playSoundEffect('correct');
+                    } else {
+                        arcLives--;
+                        playSoundEffect('wrong');
+                    }
+                    arcItems.splice(i, 1);
+                    updateArcadeHUD();
+                    continue;
+                }
+
+                // Chão
+                if (item.y > arcCanvas.height + 20) {
+                    arcItems.splice(i, 1);
+                }
+            }
+
+            if (arcLives <= 0) {
+                endArcadeGame(false);
+            } else if (arcScore >= 150) {
+                endArcadeGame(true);
+            } else {
+                arcAnimFrame = requestAnimationFrame(loopArcadeGame);
+            }
+        }
+
+        function updateArcadeHUD() {
+            document.getElementById('arcade-score').innerText = arcScore;
+            document.getElementById('arcade-lives').innerText = '❤️'.repeat(Math.max(0, arcLives));
+        }
+
+        function endArcadeGame(victory) {
+            arcRunning = false;
+            cancelAnimationFrame(arcAnimFrame);
+
+            const overlay = document.getElementById('arcade-overlay');
+            const title = document.getElementById('arc-over-title');
+            const desc = document.getElementById('arc-over-desc');
+
+            overlay.classList.remove('hidden');
+
+            if (victory) {
+                title.innerText = "🏆 SENSACIONAL! VOCÊ VENCEU!";
+                desc.innerText = `Você atingiu ${arcScore} pontos coletando comida de verdade e demonstrando hábitos exemplares!`;
+                playSoundEffect('correct');
+                try { confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } }); } catch(e){}
+            } else {
+                title.innerText = "💥 Fim de Jogo!";
+                desc.innerText = `Você atingiu ${arcScore} pontos. Cuidado com os ultraprocessados! Tente novamente para alcançar os 150 pontos.`;
+                playSoundEffect('wrong');
+            }
+        }
+
+        let playerPos = 1;
+        let cpuPos = 1;
+        let score = 0;
+        let gameMode = 'solo';
+        let currentTurn = 'player';
+        let isWaitingQuiz = false;
+
+        const TOTAL_CASAS = 20;
+
+        const boardTilesConfig = [
+            { id: 1, type: 'start', icon: '🚀', title: 'Início', bg: 'bg-emerald-600' },
+            { id: 2, type: 'quiz', icon: '❓', title: 'Quiz 1', bg: 'bg-indigo-600' },
+            { id: 3, type: 'healthy', icon: '🍎', title: '+In Natura', bg: 'bg-emerald-500' },
+            { id: 4, type: 'normal', icon: '👣', title: 'Avançou', bg: 'bg-slate-800' },
+            { id: 5, type: 'junk', icon: '🥤', title: 'Ultraproc!', bg: 'bg-rose-600' },
+            { id: 6, type: 'quiz', icon: '❓', title: 'Quiz 2', bg: 'bg-indigo-600' },
+            { id: 7, type: 'healthy', icon: '🥦', title: '+Verduras', bg: 'bg-emerald-500' },
+            { id: 8, type: 'normal', icon: '👣', title: 'Caminho', bg: 'bg-slate-800' },
+            { id: 9, type: 'quiz', icon: '❓', title: 'Quiz 3', bg: 'bg-indigo-600' },
+            { id: 10, type: 'healthy', icon: '🍌', title: '+Frutas', bg: 'bg-emerald-500' },
+            { id: 11, type: 'junk', icon: '🍟', title: 'Salgadinho', bg: 'bg-rose-600' },
+            { id: 12, type: 'quiz', icon: '❓', title: 'Quiz 4', bg: 'bg-indigo-600' },
+            { id: 13, type: 'healthy', icon: '🥚', title: '+Proteínas', bg: 'bg-emerald-500' },
+            { id: 14, type: 'normal', icon: '👣', title: 'Caminho', bg: 'bg-slate-800' },
+            { id: 15, type: 'quiz', icon: '❓', title: 'Quiz 5', bg: 'bg-indigo-600' },
+            { id: 16, type: 'junk', icon: '🍩', title: 'Doce!', bg: 'bg-rose-600' },
+            { id: 17, type: 'healthy', icon: '💧', title: '+Água', bg: 'bg-emerald-500' },
+            { id: 18, type: 'quiz', icon: '❓', title: 'Quiz 6', bg: 'bg-indigo-600' },
+            { id: 19, type: 'normal', icon: '👣', title: 'Reta Final', bg: 'bg-slate-800' },
+            { id: 20, type: 'finish', icon: '🥗', title: 'Chegada', bg: 'bg-amber-500' }
+        ];
+
+        const quizBank = [
+            {
+                q: "Qual destes alimentos é considerado IN NATURA?",
+                options: [
+                    { text: "Maçã fresca colhida da árvore", correct: true },
+                    { text: "Biscoito recheado de morango", correct: false },
+                    { text: "Refrigerante de cola", correct: false }
+                ],
+                explain: "Excelente! Frutas, legumes e verduras são alimentos in natura de verdade."
+            },
+            {
+                q: "Na lista de ingredientes de um rótulo, qual é o 1º ingrediente indicado?",
+                options: [
+                    { text: "O ingrediente em MENOR quantidade", correct: false },
+                    { text: "O ingrediente em MAIOR quantidade", correct: true },
+                    { text: "Apenas o conservante químico", correct: false }
+                ],
+                explain: "Correto! A lista segue a Regra de Ouro da ordem decrescente."
+            },
+            {
+                q: "Qual é o principal risco dos alimentos ULTRAPROCESSADOS?",
+                options: [
+                    { text: "Excesso de gorduras, açúcares e aditivos químicos", correct: true },
+                    { text: "Excesso de vitaminas e minerais naturais", correct: false },
+                    { text: "Serem colhidos diretamente da natureza", correct: false }
+                ],
+                explain: "Perfeito! Ultraprocessados contêm corantes e substâncias sintéticas."
+            },
+            {
+                q: "Qual destas é a recomendação oficial do Guia Alimentar do Brasil?",
+                options: [
+                    { text: "Trocar o almoço por salgadinhos de pacote", correct: false },
+                    { text: "Fazer de alimentos in natura a base da alimentação", correct: true },
+                    { text: "Tomar refrigerante no lugar de água pura", correct: false }
+                ],
+                explain: "Isso mesmo! Alimentos in natura devem ser a base das refeições."
+            },
+            {
+                q: "Queijos simples e milho em conserva são exemplos de alimentos:",
+                options: [
+                    { text: "Processados (com sal/óleo adicionado)", correct: true },
+                    { text: "Ultraprocessados artificiais", correct: false },
+                    { text: "In Natura sem nenhum cozimento", correct: false }
+                ],
+                explain: "Boa! São alimentos processados para durarem mais tempo."
+            },
+            {
+                q: "Qual destas opções é um lanche saudável para a escola?",
+                options: [
+                    { text: "Salada de frutas naturais com aveia", correct: true },
+                    { text: "Refrigerante com biscoito recheado", correct: false },
+                    { text: "Salgadinho industrializado frito", correct: false }
+                ],
+                explain: "Show de bola! Frutas com aveia trazem fibra e energia limpa."
+            }
+        ];
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            document.getElementById('mode-solo').className = mode === 'solo' ? 
+                "flex-1 py-1.5 px-3 bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md" : 
+                "flex-1 py-1.5 px-3 bg-slate-800 text-white font-bold text-xs rounded-xl transition-all hover:bg-slate-700";
+            
+            document.getElementById('mode-vs').className = mode === 'vs' ? 
+                "flex-1 py-1.5 px-3 bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md" : 
+                "flex-1 py-1.5 px-3 bg-slate-800 text-white font-bold text-xs rounded-xl transition-all hover:bg-slate-700";
+
+            resetGame();
+        }
+
+        function resetGame() {
+            playerPos = 1;
+            cpuPos = 1;
+            score = 0;
+            currentTurn = 'player';
+            isWaitingQuiz = false;
+            updateHUD();
+            renderBoard();
+            document.getElementById('dice-display').innerText = '🎲';
+            document.getElementById('dice-msg').innerText = 'Jogo reiniciado! Clique no botão para jogar o dado.';
+            document.getElementById('event-title').innerText = 'Desafio Nutricional';
+            document.getElementById('event-desc').innerText = 'Avance pelas casas e vença a trilha da nutrição!';
+            document.getElementById('quiz-options').innerHTML = '';
+            document.getElementById('quiz-options').classList.add('hidden');
+            document.getElementById('btn-roll-dice').disabled = false;
+        }
+
+        function updateHUD() {
+            document.getElementById('game-score').innerText = `${score} pts`;
+            document.getElementById('game-position').innerText = `Casa ${playerPos}`;
+
+            const turnInd = document.getElementById('turn-indicator');
+            if (currentTurn === 'player') {
+                turnInd.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> <span>Sua Vez de Jogar!</span>`;
+            } else {
+                turnInd.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span> <span>Vez do Robô...</span>`;
+            }
+        }
+
+        function renderBoard() {
+            const grid = document.getElementById('board-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            boardTilesConfig.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = `${tile.bg} p-1.5 sm:p-2 rounded-xl text-center relative flex flex-col items-center justify-center min-h-[58px] sm:min-h-[64px] border-2 border-white/20 board-tile shadow-md`;
+
+                const isPlayerHere = playerPos === tile.id;
+                const isCpuHere = gameMode === 'vs' && cpuPos === tile.id;
+
+                let avatarHtml = '';
+                if (isPlayerHere && isCpuHere) {
+                    avatarHtml = `<div class="absolute -top-3 bg-amber-300 text-slate-950 font-extrabold text-[9px] px-1.5 py-0.5 rounded-full shadow-lg border border-amber-500 z-10 animate-bounce">🏃‍♂️🤖</div>`;
+                } else if (isPlayerHere) {
+                    avatarHtml = `<div class="absolute -top-3 bg-emerald-300 text-slate-950 font-extrabold text-[9px] px-1.5 py-0.5 rounded-full shadow-lg border border-emerald-500 z-10 animate-bounce">🏃‍♂️ Você</div>`;
+                } else if (isCpuHere) {
+                    avatarHtml = `<div class="absolute -top-3 bg-purple-300 text-slate-950 font-extrabold text-[9px] px-1.5 py-0.5 rounded-full shadow-lg border border-purple-500 z-10 animate-bounce">🤖 Robô</div>`;
+                }
+
+                el.innerHTML = `
+                    ${avatarHtml}
+                    <div class="text-[10px] sm:text-xs font-bold text-amber-200">${tile.id}</div>
+                    <div class="text-base sm:text-lg">${tile.icon}</div>
+                    <div class="text-[8px] sm:text-[9px] font-semibold text-white/90 truncate w-full">${tile.title}</div>
+                `;
+
+                grid.appendChild(el);
+            });
+        }
+
+        function jogarDado() {
+            if (isWaitingQuiz) return;
+
+            playSoundEffect('dice');
+            const btn = document.getElementById('btn-roll-dice');
+            btn.disabled = true;
+
+            const diceDisp = document.getElementById('dice-display');
+            let rollCount = 0;
+
+            const interval = setInterval(() => {
+                const tempRoll = Math.floor(Math.random() * 6) + 1;
+                diceDisp.innerText = tempRoll;
+                rollCount++;
+
+                if (rollCount > 8) {
+                    clearInterval(interval);
+                    const finalRoll = Math.floor(Math.random() * 6) + 1;
+                    diceDisp.innerText = finalRoll;
+                    processMove(finalRoll);
+                }
+            }, 80);
+        }
+
+        function processMove(roll) {
+            if (currentTurn === 'player') {
+                playerPos += roll;
+                if (playerPos >= TOTAL_CASAS) {
+                    playerPos = TOTAL_CASAS;
+                    renderBoard();
+                    victoryTrilha('Você');
+                    return;
+                }
+                document.getElementById('dice-msg').innerText = `Você tirou ${roll} e avançou para a Casa ${playerPos}!`;
+                renderBoard();
+                checkTileEvent(playerPos);
+            } else {
+                cpuPos += roll;
+                if (cpuPos >= TOTAL_CASAS) {
+                    cpuPos = TOTAL_CASAS;
+                    renderBoard();
+                    victoryTrilha('O Robô');
+                    return;
+                }
+                document.getElementById('dice-msg').innerText = `O Robô tirou ${roll} e foi para a Casa ${cpuPos}!`;
+                renderBoard();
+                
+                setTimeout(() => {
+                    currentTurn = 'player';
+                    updateHUD();
+                    document.getElementById('btn-roll-dice').disabled = false;
+                }, 1500);
+            }
+        }
+
+        function checkTileEvent(pos) {
+            const tile = boardTilesConfig.find(t => t.id === pos);
+            if (!tile) return;
+
+            const titleEl = document.getElementById('event-title');
+            const descEl = document.getElementById('event-desc');
+            const optsEl = document.getElementById('quiz-options');
+
+            optsEl.innerHTML = '';
+            optsEl.classList.add('hidden');
+
+            if (tile.type === 'quiz') {
+                isWaitingQuiz = true;
+                const quiz = quizBank[(pos % quizBank.length)];
+                titleEl.innerText = '❓ Desafio Quiz Nutricional!';
+                descEl.innerText = quiz.q;
+
+                optsEl.classList.remove('hidden');
+                quiz.options.forEach((opt) => {
+                    const b = document.createElement('button');
+                    b.className = "w-full text-left p-2.5 bg-slate-800 hover:bg-slate-700 text-xs text-amber-100 rounded-xl font-medium border border-white/10 transition-all flex items-center justify-between";
+                    b.innerHTML = `<span>${opt.text}</span> <i class="fa-solid fa-chevron-right text-[10px] text-amber-300"></i>`;
+                    b.onclick = () => answerQuiz(opt.correct, quiz.explain);
+                    optsEl.appendChild(b);
+                });
+
+            } else if (tile.type === 'healthy') {
+                score += 50;
+                playerPos = Math.min(TOTAL_CASAS, playerPos + 1);
+                titleEl.innerText = `${tile.icon} Alimento Saudável!`;
+                descEl.innerText = `Você escolheu comida de verdade! +50 pontos e avançou +1 casa bônus!`;
+                playSoundEffect('correct');
+                renderBoard();
+                updateHUD();
+                finishTurn();
+
+            } else if (tile.type === 'junk') {
+                score = Math.max(0, score - 20);
+                playerPos = Math.max(1, playerPos - 1);
+                titleEl.innerText = `${tile.icon} Alerta de Ultraprocessado!`;
+                descEl.innerText = `Cuidado com os aditivos químicos! -20 pontos e voltou 1 casa.`;
+                playSoundEffect('wrong');
+                renderBoard();
+                updateHUD();
+                finishTurn();
+
+            } else {
+                titleEl.innerText = '👣 Caminho da Saúde';
+                descEl.innerText = 'Continue firme em direção a escolhas mais conscientes!';
+                finishTurn();
+            }
+        }
+
+        function answerQuiz(isCorrect, explanation) {
+            isWaitingQuiz = false;
+            const titleEl = document.getElementById('event-title');
+            const descEl = document.getElementById('event-desc');
+            const optsEl = document.getElementById('quiz-options');
+
+            optsEl.classList.add('hidden');
+
+            if (isCorrect) {
+                score += 100;
+                playerPos = Math.min(TOTAL_CASAS, playerPos + 2);
+                titleEl.innerText = '🎉 Resposta Correta!';
+                descEl.innerText = `${explanation} (+100 pts e +2 casas!)`;
+                playSoundEffect('correct');
+            } else {
+                titleEl.innerText = '❌ Resposta Incorreta!';
+                descEl.innerText = `Ops! Revise as etapas da WebQuest. Não ganhou casas extras dessa vez.`;
+                playSoundEffect('wrong');
+            }
+
+            renderBoard();
+            updateHUD();
+            finishTurn();
+        }
+
+        function finishTurn() {
+            if (gameMode === 'vs' && playerPos < TOTAL_CASAS) {
+                currentTurn = 'cpu';
+                updateHUD();
+                document.getElementById('btn-roll-dice').disabled = true;
+
+                setTimeout(() => {
+                    jogarDadoCpu();
+                }, 1800);
+            } else {
+                document.getElementById('btn-roll-dice').disabled = false;
+            }
+        }
+
+        function jogarDadoCpu() {
+            playSoundEffect('dice');
+            const finalRoll = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('dice-display').innerText = finalRoll;
+            processMove(finalRoll);
+        }
+
+        function victoryTrilha(winner) {
+            playSoundEffect('correct');
+            try {
+                confetti({
+                    particleCount: 120,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } catch(e){}
+
+            document.getElementById('event-title').innerText = `🏆 PARABÉNS! ${winner.toUpperCase()} VENCEU!`;
+            document.getElementById('event-desc').innerText = `Você completou a Trilha da Alimentação Consciente com ${score} pontos! Mostrou que domina o tema da nutrição!`;
+            document.getElementById('btn-roll-dice').disabled = true;
+            showToast(`Vitória na Trilha! Pontuação: ${score} pts!`, 'fa-trophy text-amber-400');
+        }
+    </script>
+</body>
+</html><script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="cbfebb51-c0e9-45c9-92ef-94098ff860ce" data-app-host="app.netlify.com" data-account-tier="free"></script>
